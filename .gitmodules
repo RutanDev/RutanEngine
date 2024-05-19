@@ -1,0 +1,9 @@
+[submodule "Engine/Vendor/spdlog"]
+	path = Engine/Vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "Engine/Vendor/imgui"]
+	path = Engine/Vendor/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "Engine/Vendor/stb"]
+	path = Engine/Vendor/stb
+	url = https://github.com/nothings/stb
