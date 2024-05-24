@@ -1,39 +1,75 @@
-#include "SandboxApp.h"
-#include "RutanEngine.h"
+#include <RutanEngine.h>
 
-SandboxApp::SandboxApp(const std::string& nameOfApp)
-	:Application(nameOfApp)
-{
-}
+/*
+*	### Welcome to the Sandbox for RutanEngine
+*
+*	Here we can play around with our features and test stuff out :)
+*
+*/
 
-void SandboxApp::Init()
-{
-	// Load assets
-	LOG_INFO("Sandbox Initalized");
-}
 
-void SandboxApp::Clean()
+class SandboxApp : public Rutan::Application
 {
-	// Clean up assets and stuff
-	LOG_INFO("Sandbox has been cleaned up");
-}
+public:
+	SandboxApp(const Rutan::AppSettings& appsettings)
+		:Application(appsettings)
+	{
+	}
 
-void SandboxApp::Input()
-{
-	// What happens if we press "W"?
-}
+	~SandboxApp()
+	{
+	}
 
-void SandboxApp::Update(f64 dt)
-{
-	// Scene.Update();
-}
+	// Inherited via Application
+	virtual void Init() override
+	{
+		// Load assets
+		LOG_INFO("Sandbox Initalized");
+	}
 
-void SandboxApp::Render()
-{
-	// Scene.Render();
-}
+	virtual void Clean() override
+	{
+		// Clean up assets and stuff
+		LOG_INFO("Sandbox has been cleaned up");
+	}
 
-void SandboxApp::RenderGUI()
+	virtual void Input() override
+	{
+		// What happens if we press "W"?
+	}
+
+	virtual void Update(f64 dt) override
+	{
+		// Scene.Update();
+	}
+
+	virtual void Render() override
+	{
+		// Scene.Render();
+	}
+
+	virtual void RenderGUI() override
+	{
+		// Render ImGUI stuff?
+	}
+
+private:
+	// Store stuff related to this project here
+
+};
+
+
+int main()
 {
-	// Render ImGUI stuff?
+	// Setup stuff for your application
+	Rutan::AppSettings settings;
+	settings.Name		  = "Sandbox";
+	settings.WindowWidth  = 1600u;
+	settings.WindowHeight = 900u;
+	settings.Fullscreen   = false;
+	settings.VSync		  = true;
+
+	// Start application
+	SandboxApp app(settings);
+	return 0;
 }

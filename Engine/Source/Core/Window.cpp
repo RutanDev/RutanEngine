@@ -1,14 +1,16 @@
 #include "EnginePCH.h"
 #include "Window.h"
+#include <Core/Application.h>
 
 namespace Rutan
 {
 
-Window::Window()
-	: m_Fullscreen(false)
-	, m_VSync(true)
-	, m_Caption("RutanEngine")
-	, m_Size({ 0,0 })
+Window::Window(const AppSettings& settings)
+	: m_Name(settings.Name)
+	, m_Fullscreen(settings.Fullscreen)
+	, m_VSync(settings.VSync)
+	, m_Width(settings.WindowWidth)
+	, m_Height(settings.WindowHeight)
 {
 }
 
@@ -18,12 +20,7 @@ Window::~Window()
 
 bool Window::Init()
 {
-	// TODO: Read from init-file?
-	m_Size.width  = 1600;
-	m_Size.height = 900;
-
-	LOG_ENGINE_INFO("Created a window '{0}' ({1}x{2})", m_Caption, m_Size.width, m_Size.height);
-
+	LOG_ENGINE_INFO("Created a window '{0}' ({1}x{2})", m_Name, m_Width, m_Height);
 	return true;
 }
 
@@ -47,9 +44,15 @@ void Window::EnableFullscreen(bool toggle)
 	m_Fullscreen = toggle;
 }
 
-void Window::SetCaption(const std::string& caption)
+void Window::SetName(const std::string& name)
 {
-	m_Caption = caption;
+	m_Name = name;
+}
+
+void Window::SetSize(u32 width, u32 height)
+{
+	m_Width	 = width;
+	m_Height = height;
 }
 
 

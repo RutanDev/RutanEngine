@@ -1,21 +1,19 @@
 #pragma once
 #include <string>
+#include <Core/Types.h>
+
 
 namespace Rutan
 {
+struct AppSettings;
 
 
 class Window
 {
 public:
-	Window();
+	Window(const AppSettings& settings);
 	~Window();
 
-	// Should not be possible to copy or assign.
-	Window(const Window&) = delete;
-	Window& operator=(const Window&) = delete;
-
-	// Setup the GLFW window
 	bool Init();
 
 	// Basic - needed in most cases
@@ -23,10 +21,11 @@ public:
 	void PollEvent();
 	void Display();
 
-	// Settings from file
+	// Adjust window settings
+	void SetName(const std::string& name);
+	void SetSize(u32 width, u32 height);
 	void EnableVSync(bool toggle = true);
 	void EnableFullscreen(bool toggle = true);
-	void SetCaption(const std::string& caption);
 
 private:
 	// Window callback events
@@ -34,16 +33,13 @@ private:
 	void ProcessEvents();
 
 private:
+	std::string m_Name;
 	bool		m_Fullscreen;
 	bool		m_VSync;
-	std::string m_Caption;
 
-	// [TODO] Later using a vector2 or something simular
-	struct size
-	{
-		int width;
-		int height;
-	} m_Size;
+	// [TODO] Use vector2 when we have it
+	u32 m_Width;
+	u32 m_Height;
 
 };
 

@@ -1,26 +1,34 @@
 #pragma once
 #include <Core/Window.h>
+#include <Core/Types.h>
 #include <Graphics/Renderer.h>
-
-// [TODO] check why PCH is not working correctly...
-typedef double f64;
 #include <memory>
+
 
 namespace Rutan
 {
 
+struct AppSettings
+{
+	std::string Name		 = "Rutan";
+	u32			WindowWidth  = 1600;
+	u32			WindowHeight = 900;
+	bool		Fullscreen	 = false;
+	bool		VSync		 = true;
+	bool		Resizable	 = true;
+	bool		EnableImGui  = true;
+};
+
+
 class Application
 {
 public:
-	Application(const std::string& nameOfApp);
+	Application(const Rutan::AppSettings& settings);
 	~Application() = default;
 
 	// Should not be possible to copy or assign.
 	Application(const Application&) = delete;
 	Application& operator=(const Application&) = delete;
-
-	// Layout of application inspired by:
-	// https://github.com/Shot511/RapidGL/blob/master/src/core/core_app.h
 
 	// Setup data specific for this application
 	virtual void Init() = 0;
@@ -35,18 +43,11 @@ public:
 	// Render imGUI stuff
 	virtual void RenderGUI() = 0;
 
-	// Start the "endless" loop
+private:
 	void Run();
 
 private:
-
-
-private:
-	bool m_IsRunning;
-
-
 	// Handling the surface to draw on
-	// and window size and resizing and so on.
 	Window m_Window;
 
 	// InputHandler

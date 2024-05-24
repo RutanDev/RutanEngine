@@ -31,9 +31,9 @@ project "Engine"
 	objdir("Build/Bin-int/" .. outputdir .. "/%{prj.name}")
 
 	-- Precompiled header files
-	pchheader ("EnginePCH.h")
-	pchsource "%{prj.name}/EnginePCH.cpp"
-
+	pchheader "EnginePCH.h"
+	pchsource "%{prj.name}/Source/EnginePCH.cpp"
+	
 	files
 	{
 		"%{prj.name}/**.h",

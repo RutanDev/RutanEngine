@@ -22,15 +22,6 @@
 #endif
 
 /*
-	Include platform specific files
-*/
-#ifdef RUTAN_WINDOWS
-	#define VC_EXTRALEAN
-	#define WIN32_LEAN_AND_MEAN
-	#include <Windows.h>
-#endif
-
-/*
 	Defines the Graphics API
 */
 #define RUTAN_D3D11

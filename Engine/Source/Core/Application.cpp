@@ -9,24 +9,24 @@ namespace Rutan
 {
 
 
-Application::Application(const std::string& nameOfApp)
-	:m_Window(), m_IsRunning(true)
+Application::Application(const Rutan::AppSettings& settings)
+	: m_Window(settings)
 {
-	// [TODO] Read from settingsfile
-	m_Window.EnableVSync(true);
-	m_Window.EnableFullscreen(false);
-	m_Window.SetCaption(nameOfApp);
 	if (!m_Window.Init())
 	{
 		LOG_ENGINE_FATAL("Window failed to initialize...");
+		return;
 	}
 
 	m_Renderer = std::make_unique<D3D11Graphics>();
-
 	if (!m_Renderer->Init())
 	{
 		LOG_ENGINE_FATAL("Renderer failed to initialize...");
+		return;
 	}
+
+	// Start the application
+	Run();
 }
 
 void Application::Run()
