@@ -18,6 +18,7 @@ You can download it using Git with the command:
 4. Go bananas!
 
 # Libraries and 3rd-parties
+* [premake](https://github.com/premake/premake-core/) Simple build configuration.
 * [spdlog](https://github.com/gabime/spdlog) Very fast logging library.
 * [imgui](https://github.com/ocornut/imgui) Debugging GUI.
 * [stb](https://github.com/nothings/stb) Loading in images.
