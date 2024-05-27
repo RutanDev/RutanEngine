@@ -16,6 +16,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["spdlog"] 	= "Vendor/spdlog/include"
 IncludeDir["stb"] 		= "Vendor/stb"
+IncludeDir["entt"]		= "Vendor/entt/single_include"
 
 LibraryDir = {}
 
@@ -44,7 +45,8 @@ project "Engine"
 	{
 		"%{prj.name}",
 		"%{prj.name}/Source",
-		"%{IncludeDir.spdlog}"
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.entt}"
 	}
 	
 	libdirs 
