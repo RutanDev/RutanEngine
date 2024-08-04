@@ -7,13 +7,10 @@ public:
 	D3D11Graphics();
 	~D3D11Graphics() = default;
 
-	virtual bool Init() override;
+	virtual bool Init(GLFWwindow* windowHandle) override;
 	virtual void ClearScreen(std::array<float, 4> color) override;
 	virtual void SwapBuffers() override;
 	virtual void Draw() override;
-
-private:
-	//bool Create
 
 private:
 	ComPtr<ID3D11Device>			m_Device;

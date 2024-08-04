@@ -22,3 +22,5 @@ You can download it using Git with the command:
 * [spdlog](https://github.com/gabime/spdlog) Very fast logging library.
 * [imgui](https://github.com/ocornut/imgui) Debugging GUI.
 * [stb](https://github.com/nothings/stb) Loading in images.
+* [glfw](https://github.com/glfw/glfw) Window creation and input.
+* 

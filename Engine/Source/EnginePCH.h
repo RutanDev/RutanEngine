@@ -5,6 +5,9 @@
 	#define VC_EXTRALEAN
 	#define WIN32_LEAN_AND_MEAN
 	#include <Windows.h>
+
+	#define GLFW_INCLUDE_NONE
+	#define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 
 // Standard libraries

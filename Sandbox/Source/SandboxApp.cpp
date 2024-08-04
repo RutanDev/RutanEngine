@@ -1,4 +1,5 @@
 #include <RutanEngine.h>
+#include <IO/Keycodes.h>
 
 /*
 *	### Welcome to the Sandbox for RutanEngine
@@ -8,10 +9,10 @@
 */
 
 
-class SandboxApp : public Rutan::Application
+class SandboxApp : public Rutan::Core::Application
 {
 public:
-	SandboxApp(const Rutan::AppSettings& appsettings)
+	SandboxApp(const Rutan::Core::AppSettings& appsettings)
 		:Application(appsettings)
 	{
 	}
@@ -33,9 +34,33 @@ public:
 		LOG_INFO("Sandbox has been cleaned up");
 	}
 
-	virtual void Input() override
+	virtual void Input(Rutan::IO::InputHandler& input) override
 	{
-		// What happens if we press "W"?
+		// Iterate the keyboard
+		for (u16 i = Rutan::IO::Keyboard::FIRST; i < Rutan::IO::Keyboard::LAST; i++)
+		{
+			if (input.IsKeyPressed(i))
+				LOG_INFO("Keyboard: Pressed once {0}", i);
+			else if (input.IsKeyHeld(i))
+				LOG_INFO("Keyboard: Holding down {0}", i);
+			else if (input.IsKeyReleased(i))
+				LOG_INFO("Keyboard: Released once {0}", i);
+		}
+
+		// Iterate the mouse buttons
+		for (u16 i = Rutan::IO::Mouse::FIRST; i < Rutan::IO::Mouse::LAST; i++)
+		{
+			if (input.IsKeyPressed(i))
+				LOG_INFO("Mouse: Pressed once {0}", i);
+			else if (input.IsKeyHeld(i))
+				LOG_INFO("Mouse: Holding down {0}", i);
+			else if (input.IsKeyReleased(i))
+				LOG_INFO("Mouse: Released once {0}", i);
+		}
+
+		// Close application
+		if (input.IsKeyPressed(Rutan::IO::Keyboard::Escape))
+			StopApp();
 	}
 
 	virtual void Update(f64 dt) override
@@ -62,7 +87,7 @@ private:
 int main()
 {
 	// Setup stuff for your application
-	Rutan::AppSettings settings;
+	Rutan::Core::AppSettings settings;
 	settings.Name		  = "Sandbox";
 	settings.WindowWidth  = 1600u;
 	settings.WindowHeight = 900u;
@@ -70,6 +95,7 @@ int main()
 	settings.VSync		  = true;
 
 	// Start application
-	SandboxApp app(settings);
+	SandboxApp sandbox(settings);
+	sandbox.StartApp();
 	return 0;
 }

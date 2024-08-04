@@ -17,6 +17,7 @@ IncludeDir = {}
 IncludeDir["spdlog"] 	= "Vendor/spdlog/include"
 IncludeDir["stb"] 		= "Vendor/stb"
 IncludeDir["entt"]		= "Vendor/entt/single_include"
+IncludeDir["glfw"]		= "Vendor/glfw/include"
 
 LibraryDir = {}
 
@@ -46,7 +47,8 @@ project "Engine"
 		"%{prj.name}",
 		"%{prj.name}/Source",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.glfw}"
 	}
 	
 	libdirs 
@@ -55,6 +57,7 @@ project "Engine"
 
 	links
 	{
+		"glfw"
 	}
 
 	filter "system:windows"
@@ -96,6 +99,11 @@ project "Engine"
 	filter "configurations:Dist"
 		defines "RUTAN_DIST"
 		optimize "On"
+		
+	-- Solutions for 3rd party libs
+	group "Vendor"
+		include "Vendor/premake5_glfw"
+	group ""
 
 project "Sandbox"
 	location		"Sandbox"
@@ -167,26 +175,28 @@ project "Sandbox"
 		defines "RUTAN_DIST"
 		optimize "On"
 		
-		
 -- Cleaning up the project
 newaction {
 	trigger		= "clean",
-	description = "Removing solutionfiles",
+	description = "onCleanProject",
 	execute     = function()
-		print("Removing binaries and intermediate binaries")
-		os.rmdir("Build/Bin")
-		os.rmdir("Build/Bin-int")
-
+		print("Removing build files")
+		os.rmdir("Build")
+		
 		print("Removing Visual Studio files")
 		os.rmdir(".vs")
-		os.remove("**.sln")
-		os.remove("**.vcxproj")
-		os.remove("**.vcxproj.filters")
+		os.remove("*.sln")
+		os.remove("Engine/*.vcxproj")
+		os.remove("Engine/*.vcxproj.filters")
+		os.remove("Sandbox/*.vcxproj")
+		os.remove("Sandbox/*.vcxproj.filters")
+		os.remove("Vendor/*.vcxproj")
+		os.remove("Vendor/*.vcxproj.filters")
 		os.remove("**.vcxproj.user")
-
-		print("Removing makefiles")
-		os.remove("**Makefile")
-
-		print("Cleaning: Done")
+			
+		print("Removing makefile")
+		os.remove("*Makefile")
 	end
+	
+	
 }
