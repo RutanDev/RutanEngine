@@ -18,6 +18,7 @@ IncludeDir["spdlog"] 	= "Vendor/spdlog/include"
 IncludeDir["stb"] 		= "Vendor/stb"
 IncludeDir["entt"]		= "Vendor/entt/single_include"
 IncludeDir["glfw"]		= "Vendor/glfw/include"
+IncludeDir["glm"] 		= "Vendor/glm"
 
 LibraryDir = {}
 
@@ -48,7 +49,8 @@ project "Engine"
 		"%{prj.name}/Source",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.glfw}"
+		"%{IncludeDir.glfw}",
+		"%{IncludeDir.glm}"
 	}
 	
 	libdirs 
@@ -125,7 +127,8 @@ project "Sandbox"
 	{
 		"Engine",
 		"Engine/Source",
-		"%{IncludeDir.spdlog}"
+		"%{IncludeDir.spdlog}",
+		"%{IncludeDir.glm}"
 	}
 	
 	links

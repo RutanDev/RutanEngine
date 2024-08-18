@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <Core/Types.h>
+#include <glm/vec2.hpp>
 
 
 struct GLFWwindow;
@@ -36,10 +37,7 @@ private:
 	std::string m_Name;
 	bool		m_Fullscreen;
 	bool		m_VSync;
-
-	// [TODO] Use vector2 when we have it
-	u32 m_Width;
-	u32 m_Height;
+	glm::uvec2  m_WindowSize;
 };
 
 

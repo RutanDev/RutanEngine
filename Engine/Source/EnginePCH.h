@@ -20,6 +20,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+// Math
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 // Good to get access to in engine
 #include <Core/Types.h>
 #include <Utils/Logger.h>

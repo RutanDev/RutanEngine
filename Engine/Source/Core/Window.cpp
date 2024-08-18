@@ -11,8 +11,7 @@ Window::Window(const Rutan::Core::AppSettings& settings)
 	: m_Name(settings.Name)
 	, m_Fullscreen(settings.Fullscreen)
 	, m_VSync(settings.VSync)
-	, m_Width(settings.WindowWidth)
-	, m_Height(settings.WindowHeight)
+	, m_WindowSize(settings.WindowWidth, settings.WindowHeight)
 	, m_GLFWwindow(nullptr)
 {
 }
@@ -36,11 +35,12 @@ bool Window::Init()
 	GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 
 	// Resolution not set... Getting the resolution of the primary monitor
-	if (!m_Width || !m_Height)
+	if (!m_WindowSize.x || !m_WindowSize.y)
 	{
 		const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
-		m_Width  = videoMode->width;
-		m_Height = videoMode->height;
+		
+		m_WindowSize.x = videoMode->width;
+		m_WindowSize.y = videoMode->height;
 	}
 
 	// Should not scale the window content
@@ -49,14 +49,14 @@ bool Window::Init()
 
 	GLFWmonitor* fullscreenMonitor = m_Fullscreen ? primaryMonitor : nullptr;
 
-	m_GLFWwindow = glfwCreateWindow(m_Width, m_Height, m_Name.c_str(), fullscreenMonitor, nullptr);
+	m_GLFWwindow = glfwCreateWindow(m_WindowSize.x, m_WindowSize.y, m_Name.c_str(), fullscreenMonitor, nullptr);
 	if (!m_GLFWwindow)
 	{
-		LOG_ENGINE_INFO("GLFW: Failed to create window with width({0}), height({1}), name({2}) and fullscreen({3})", m_Width, m_Height, m_Name, m_Fullscreen);
+		LOG_ENGINE_INFO("GLFW: Failed to create window with width({0}), height({1}), name({2}) and fullscreen({3})", m_WindowSize.x, m_WindowSize.y, m_Name, m_Fullscreen);
 		glfwTerminate();
 		return false;
 	}
-	LOG_ENGINE_INFO("Created a window '{0}' ({1}x{2})", m_Name, m_Width, m_Height);
+	LOG_ENGINE_INFO("Created a window '{0}' ({1}x{2})", m_Name, m_WindowSize.x, m_WindowSize.y);
 
 	// Setting up GLFW callback functions
 	glfwSetWindowSizeCallback(m_GLFWwindow, [](GLFWwindow* window, int width, int height) 
@@ -103,9 +103,9 @@ void Window::SetName(const std::string& name)
 
 void Window::SetSize(u32 width, u32 height)
 {
-	m_Width	 = width;
-	m_Height = height;
-	glfwSetWindowSize(m_GLFWwindow, m_Width, m_Height);
+	m_WindowSize.x = width;
+	m_WindowSize.y = height;
+	glfwSetWindowSize(m_GLFWwindow, m_WindowSize.x, m_WindowSize.y);
 }
 
 
