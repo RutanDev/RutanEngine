@@ -52,20 +52,11 @@ bool Window::Init()
 	m_GLFWwindow = glfwCreateWindow(m_WindowSize.x, m_WindowSize.y, m_Name.c_str(), fullscreenMonitor, nullptr);
 	if (!m_GLFWwindow)
 	{
-		LOG_ENGINE_INFO("GLFW: Failed to create window with width({0}), height({1}), name({2}) and fullscreen({3})", m_WindowSize.x, m_WindowSize.y, m_Name, m_Fullscreen);
+		LOG_ENGINE_FATAL("GLFW: Failed to create window with width({0}), height({1}), name({2}) and fullscreen({3})", m_WindowSize.x, m_WindowSize.y, m_Name, m_Fullscreen);
 		glfwTerminate();
 		return false;
 	}
 	LOG_ENGINE_INFO("Created a window '{0}' ({1}x{2})", m_Name, m_WindowSize.x, m_WindowSize.y);
-
-	// Setting up GLFW callback functions
-	glfwSetWindowSizeCallback(m_GLFWwindow, [](GLFWwindow* window, int width, int height) 
-	{
-		LOG_ENGINE_INFO("Resized window to ({0}x{1})", width, height);
-		glfwSetWindowSize(window, width, height);
-		//TODO: Resize everything in the Renderer
-		//TODO: Update the m_Width, m_Height
-	});
 
 	return true;
 }
@@ -80,6 +71,19 @@ void Window::PollEvent()
 	glfwPollEvents();
 }
 
+void Window::SetName(const std::string& name)
+{
+	m_Name = name;
+	glfwSetWindowTitle(m_GLFWwindow, m_Name.c_str());
+}
+
+void Window::SetSize(const glm::uvec2& windowSize)
+{
+	m_WindowSize.x = windowSize.x;
+	m_WindowSize.y = windowSize.y;
+	glfwSetWindowSize(m_GLFWwindow, m_WindowSize.x, m_WindowSize.y);
+}
+
 void Window::EnableVSync(bool toggle)
 {
 	m_VSync = toggle;
@@ -90,22 +94,14 @@ void Window::EnableFullscreen(bool toggle)
 	m_Fullscreen = toggle;
 }
 
-GLFWwindow* Window::getWindowHandle() const
+GLFWwindow* Window::GetWindowHandle() const
 {
 	return m_GLFWwindow;
 }
 
-void Window::SetName(const std::string& name)
+const glm::uvec2& Window::GetSize() const
 {
-	m_Name = name;
-	glfwSetWindowTitle(m_GLFWwindow, m_Name.c_str());
-}
-
-void Window::SetSize(u32 width, u32 height)
-{
-	m_WindowSize.x = width;
-	m_WindowSize.y = height;
-	glfwSetWindowSize(m_GLFWwindow, m_WindowSize.x, m_WindowSize.y);
+	return m_WindowSize;
 }
 
 

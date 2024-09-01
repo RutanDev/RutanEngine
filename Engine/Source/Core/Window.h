@@ -18,19 +18,18 @@ public:
 	Window(const Rutan::Core::AppSettings& settings);
 	~Window();
 	bool Init();
-
-	// Basic - needed in most cases
 	bool IsOpen();
 	void PollEvent();
 
 	// Adjust window settings
 	void SetName(const std::string& name);
-	void SetSize(u32 width, u32 height);
+	void SetSize(const glm::uvec2& windowSize);
 	void EnableVSync(bool toggle = true);
 	void EnableFullscreen(bool toggle = true);
 
 	// Getters
-	GLFWwindow* getWindowHandle() const;
+	GLFWwindow* GetWindowHandle() const;
+	const glm::uvec2& GetSize() const;
 
 private:
 	GLFWwindow* m_GLFWwindow;

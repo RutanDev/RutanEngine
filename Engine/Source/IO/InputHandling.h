@@ -16,6 +16,8 @@ public:
 	~InputHandler();
 	bool Init(GLFWwindow* windowHandle);
 
+	void SetKeyStatus(u16 key, u8 status);	// TODO: Hide this somehow
+
 	bool IsKeyPressed(u16 key);  // Once
 	bool IsKeyHeld(u16 key);     // Repeated
 	bool IsKeyReleased(u16 key); // Once

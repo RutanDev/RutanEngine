@@ -4,6 +4,17 @@
 namespace Rutan::IO 
 {
 
+namespace KeyStatus
+{
+enum Status : u8
+{
+	Unknown = 0,
+	Release = 1,
+	Press   = 2,
+	Repeat  = 3
+};
+}
+
 namespace Mouse
 {
 enum Buttons : u8

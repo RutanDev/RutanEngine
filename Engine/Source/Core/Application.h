@@ -47,12 +47,15 @@ public:
 	virtual void RenderGUI() = 0;
 
 private:
+	void SetupGLFWCallback();
+
+private:
 	bool             m_Running;
 	Window           m_Window;
 	IO::InputHandler m_InputHandler;
 
 	// - Closest contact with the Graphics API
-	std::unique_ptr<Renderer> m_Renderer;
+	std::unique_ptr<Graphics::Renderer> m_Renderer;
 
 	// Scenehandler
 	// - Using an ECS with all the components.
