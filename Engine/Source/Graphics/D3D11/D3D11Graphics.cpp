@@ -1,8 +1,9 @@
 #include "EnginePCH.h"
-#include <Platform/D3D11/D3D11Graphics.h>
+#include <Graphics/D3D11/D3D11Graphics.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <Core/Window.h>
+#include <glm/vec3.hpp>
 
 // Link the libs
 #pragma comment(lib, "d3d11.lib")
@@ -26,7 +27,7 @@ D3D11Graphics::D3D11Graphics()
 {
 }
 
-bool D3D11Graphics::Init(const Rutan::Core::Window& window)
+bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath)
 {
 	// Create a DXGI factory
 	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&m_DXGIFactory))))
@@ -40,15 +41,15 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window)
 
 	// Creating the device and device context
 	HRESULT result = D3D11CreateDevice(nullptr,
-									   D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE,
-									   nullptr,
-									   0,
-									   &deviceFeatureLevel,
-									   1,
-									   D3D11_SDK_VERSION,
-									   &m_Device,
-									   nullptr,
-									   &m_DeviceContext);
+                                       D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE,
+                                       nullptr,
+                                       0,
+                                       &deviceFeatureLevel,
+                                       1,
+                                       D3D11_SDK_VERSION,
+                                       &m_Device,
+                                       nullptr,
+                                       &m_DeviceContext);
 
 	if (FAILED(result))
 	{
@@ -93,14 +94,74 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window)
 		return false;
 	}
 
+
+	/* 
+	#################################################################
+		Hello triangle test for now. Move to other place later on
+	#################################################################
+	*/
+
 	m_Viewport.TopLeftX = 0.f;
 	m_Viewport.TopLeftY = 0.f;
-	m_Viewport.Width	= static_cast<float>(windowSize.x);
-	m_Viewport.Height	= static_cast<float>(windowSize.y);
+	m_Viewport.Width    = static_cast<float>(windowSize.x);
+	m_Viewport.Height   = static_cast<float>(windowSize.y);
 	m_Viewport.MinDepth = 0.f;
 	m_Viewport.MaxDepth = 1.f;
 
-	return true;
+	struct VertexPositionColor
+	{
+		glm::vec3 position;
+		glm::vec3 color;
+	};
+
+	bool createdShader = false;
+	createdShader |= m_TestShader.CreateVertexShader(m_Device.Get(), shadersPath.wstring() + L"/DefaultVS.hlsl");
+	createdShader |= m_TestShader.CreatePixelShader(m_Device.Get(),  shadersPath.wstring() + L"/DefaultPS.hlsl");
+
+
+	// Automate this somehow as it looks like shit
+	/*
+		The plan
+		* Send in a struct to inputLayoutFunction
+		* Parser - check row by row
+			* what type is it?
+			* dictionary-map from typically used types to DXGI_FORMAT
+			* SemanticName??? How to handle it???
+	*/ 
+	
+	D3D11_INPUT_ELEMENT_DESC vertexInputLayoutInfo[2] =
+	{
+		{
+			"position",
+			0,
+			DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			offsetof(VertexPositionColor, position),
+			D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			0
+		},
+		{
+			"color",
+			0,
+			DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			offsetof(VertexPositionColor, color),
+			D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			0
+		},
+	};
+	createdShader |= m_TestShader.CreateInputLayout(m_Device.Get(), vertexInputLayoutInfo, 2);
+
+	constexpr VertexPositionColor vertices[] =
+	{
+		glm::vec3(  0.0f,  0.5f, 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ),
+		glm::vec3(  0.5f, -0.5f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ),
+		glm::vec3( -0.5f, -0.5f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f )
+	};
+
+	createdShader |= m_TestShader.CreateVertexBuffer(m_Device.Get(), (void*)vertices, sizeof(vertices));
+
+	return createdShader;
 }
 
 void D3D11Graphics::OnResize(const glm::uvec2& resolution)
@@ -110,10 +171,13 @@ void D3D11Graphics::OnResize(const glm::uvec2& resolution)
 	DestroySwapchainResources();
 
 	HRESULT result = m_SwapChain->ResizeBuffers(0, 
-												resolution.x, 
-												resolution.y, 
-												DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
-												0);
+                                                resolution.x, 
+                                                resolution.y, 
+                                                DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
+                                                0);
+
+	m_Viewport.Width  = static_cast<float>(resolution.x);
+	m_Viewport.Height = static_cast<float>(resolution.y);
 
 	if (FAILED(result))
 	{
@@ -132,9 +196,15 @@ void D3D11Graphics::Render()
 {
 	// TODO: Render all the commands that was queue up
 
-	// TODO: Fix this, first version of it for now...
+
 	m_DeviceContext->RSSetViewports(1, &m_Viewport);
+	
+	// TODO: Loop through all the shaders
+	m_TestShader.Bind(m_DeviceContext.Get());
+
 	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
+	m_DeviceContext->Draw(3, 0);
+
 	m_SwapChain->Present(1, 0);
 }
 

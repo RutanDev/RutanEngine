@@ -2,16 +2,15 @@
 #include <Graphics/Renderer.h>
 #include <d3d11.h>
 #include <dxgi1_3.h>
-#include <d3dcompiler.h>
-#include <wrl.h> // ComPtr
+
+#include <Graphics/D3D11/Shader.h>	// TEMP
+
+namespace std::filesystem { class path; }
 
 
 namespace Rutan::Graphics
 {
 
-
-template<typename T>
-using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 class D3D11Graphics : public Renderer
 {
@@ -19,10 +18,8 @@ public:
 	D3D11Graphics();
 	~D3D11Graphics() = default;
 
-	virtual bool Init(const Rutan::Core::Window& window) override;
-	
+	virtual bool Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath) override;
 	virtual void OnResize(const glm::uvec2& resolution) override;
-
 	virtual void ClearScreen(const glm::vec4& color) override;
 	virtual void Render() override;
 
@@ -46,7 +43,9 @@ private:
 	// Pointer to a texture that D3D11 can draw to
 	ComPtr<ID3D11RenderTargetView> m_RenderTargetView;
 
-	D3D11_VIEWPORT m_Viewport;
+	D3D11_VIEWPORT m_Viewport;	// TODO: Should be connected to the camera?
+
+	Shader m_TestShader;	// TEMP
 };
 
 

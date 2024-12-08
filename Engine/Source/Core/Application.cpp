@@ -2,7 +2,7 @@
 #include <Core/Application.h>
 #include <Utils/Timer.h>
 #include <Platform/Platform.h>
-#include <Platform/D3D11/D3D11Graphics.h>
+#include <Graphics/D3D11/D3D11Graphics.h>
 #include <GLFW/glfw3.h>
 
 
@@ -11,41 +11,25 @@ namespace Rutan::Core
 
 
 Application::Application(const Rutan::Core::AppSettings& settings)
-	: m_Running(false)
+	: m_Running(true)
 	, m_Window(settings)
 	, m_Renderer(std::make_unique<Graphics::D3D11Graphics>())
 {
-	if (!m_Window.Init())
-	{
-		LOG_ENGINE_FATAL("Window failed to initialize...");
-		return;
-	}
-
-	if (!m_InputHandler.Init(m_Window.GetWindowHandle()))
-	{
-		LOG_ENGINE_FATAL("InputHandler failed to initialize...");
-		return;
-	}
-
-	if (!m_Renderer->Init(m_Window))
-	{
-		LOG_ENGINE_FATAL("Renderer failed to initialize...");
-		return;
-	}
-
+	m_Running &= m_Window.Init();
+	m_Running &= m_InputHandler.Init(m_Window.GetWindowHandle());
+	m_Running &= m_Renderer->Init(m_Window, m_DefaultPaths.ShaderPath);
 	SetupGLFWCallback();
 
-	m_Running = true;
-}
-
-void Application::StartApp()
-{
-	if (!m_Running) 
+	// Check that everything was initialized
+	if (!m_Running)
 	{
 		LOG_ENGINE_FATAL("Application failed to initialize...");
 		return;
 	}
+}
 
+void Application::StartApp()
+{
 	// Initialize the application with scenes and assets
 	// that was defined in your application for example "Sandbox"
 	Init();

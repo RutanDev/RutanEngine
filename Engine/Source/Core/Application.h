@@ -3,6 +3,7 @@
 #include <Core/Types.h>
 #include <IO/InputHandling.h>
 #include <Graphics/Renderer.h>
+#include <Utils/DefaultPaths.h>
 #include <memory>
 
 namespace Rutan::Core
@@ -50,9 +51,10 @@ private:
 	void SetupGLFWCallback();
 
 private:
-	bool             m_Running;
-	Window           m_Window;
-	IO::InputHandler m_InputHandler;
+	bool                m_Running;
+	Utils::DefaultPaths m_DefaultPaths;
+	Window              m_Window;
+	IO::InputHandler    m_InputHandler;
 
 	// - Closest contact with the Graphics API
 	std::unique_ptr<Graphics::Renderer> m_Renderer;
