@@ -1,5 +1,6 @@
 #include <RutanEngine.h>
 #include <IO/Keycodes.h>
+#include <imgui.h>
 
 /*
 *	### Welcome to the Sandbox for RutanEngine
@@ -66,16 +67,9 @@ public:
 	virtual void Update(f64 dt) override
 	{
 		// Scene.Update();
-	}
 
-	virtual void Render() override
-	{
-		// Scene.Render();
-	}
-
-	virtual void RenderGUI() override
-	{
-		// Render ImGUI stuff?
+		// Use ImGui in here if needed :)
+		ImGui::ShowDemoWindow();		
 	}
 
 private:

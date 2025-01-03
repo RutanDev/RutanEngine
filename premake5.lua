@@ -14,11 +14,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 -- All the vendors/3d-parties files that we need
 IncludeDir = {}
-IncludeDir["spdlog"] 	= "Vendor/spdlog/include"
-IncludeDir["stb"] 		= "Vendor/stb"
-IncludeDir["entt"]		= "Vendor/entt/single_include"
-IncludeDir["glfw"]		= "Vendor/glfw/include"
-IncludeDir["glm"] 		= "Vendor/glm"
+IncludeDir["spdlog"] = "Vendor/spdlog/include"
+IncludeDir["stb"] 	 = "Vendor/stb"
+IncludeDir["entt"]	 = "Vendor/entt/single_include"
+IncludeDir["glfw"]	 = "Vendor/glfw/include"
+IncludeDir["glm"] 	 = "Vendor/glm"
+IncludeDir["imgui"]  = "Vendor/imgui"
 
 LibraryDir = {}
 
@@ -50,16 +51,17 @@ project "Engine"
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.glfw}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.imgui}"
 	}
 	
 	libdirs 
-	{ 
+	{
 	}
 
 	links
 	{
-		"glfw"
+		"glfw", "ImGui"
 	}
 
 	filter "system:windows"
@@ -105,6 +107,7 @@ project "Engine"
 	-- Solutions for 3rd party libs
 	group "Vendor"
 		include "Vendor/premake5_glfw"
+		include "Vendor/premake5_imgui"
 	group ""
 
 project "Sandbox"
@@ -128,7 +131,8 @@ project "Sandbox"
 		"Engine",
 		"Engine/Source",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.glm}"
+		"%{IncludeDir.glm}",
+		"%{IncludeDir.imgui}"
 	}
 	
 	links

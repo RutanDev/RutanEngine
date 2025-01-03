@@ -1,9 +1,11 @@
 #include "EnginePCH.h"
 #include <Graphics/D3D11/D3D11Graphics.h>
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 #include <Core/Window.h>
 #include <glm/vec3.hpp>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_dx11.h>
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 // Link the libs
 #pragma comment(lib, "d3d11.lib")
@@ -24,7 +26,15 @@ D3D11Graphics::D3D11Graphics()
 	, m_SwapChain(nullptr)
 	, m_RenderTargetView(nullptr)
 	, m_Viewport()
+	, m_ClearColor(0.f,0.f,0.f,0.f)
 {
+}
+
+D3D11Graphics::~D3D11Graphics()
+{
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 }
 
 bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath)
@@ -94,6 +104,23 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 		return false;
 	}
 
+	// Setup ImGui
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	if (!ImGui_ImplGlfw_InitForOther(window.GetWindowHandle(), true))
+	{
+		LOG_ENGINE_FATAL("D3D11: Failed to load ImGui_ImplGlfw...");
+		return false;
+	}
+	if (!ImGui_ImplDX11_Init(m_Device.Get(), m_DeviceContext.Get()))
+	{
+		LOG_ENGINE_FATAL("D3D11: Failed to load ImGui_ImplDX11...");
+		return false;
+	}
 
 	/* 
 	#################################################################
@@ -187,24 +214,36 @@ void D3D11Graphics::OnResize(const glm::uvec2& resolution)
 	CreateSwapchainResources();
 }
 
-void D3D11Graphics::ClearScreen(const glm::vec4& color)
+void D3D11Graphics::SetClearColor(const glm::vec4& color)
 {
-	m_DeviceContext->ClearRenderTargetView(m_RenderTargetView.Get(), &color[0]);
+	m_ClearColor = color;
 }
 
-void D3D11Graphics::Render()
+void D3D11Graphics::BeginFrame()
 {
-	// TODO: Render all the commands that was queue up
-
-
+	// Clearing the screen
+	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
+	m_DeviceContext->ClearRenderTargetView(m_RenderTargetView.Get(), &m_ClearColor[0]);
 	m_DeviceContext->RSSetViewports(1, &m_Viewport);
 	
+	// TODO: Render all the commands that was queue up
 	// TODO: Loop through all the shaders
 	m_TestShader.Bind(m_DeviceContext.Get());
-
-	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
 	m_DeviceContext->Draw(3, 0);
 
+	// Prepare for next ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+}
+
+void D3D11Graphics::EndFrame()
+{
+	// Draw ImGui
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	
+	// TODO: Set vsync enabled/disabled from some setting
 	m_SwapChain->Present(1, 0);
 }
 

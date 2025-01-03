@@ -1,8 +1,9 @@
 #include "EnginePCH.h"
 #include <Core/Application.h>
-#include <Utils/Timer.h>
+#include <Utils/DeltaClock.h>
 #include <Platform/Platform.h>
 #include <Graphics/D3D11/D3D11Graphics.h>
+#include <backends/imgui_impl_glfw.h>
 #include <GLFW/glfw3.h>
 
 
@@ -26,6 +27,8 @@ Application::Application(const Rutan::Core::AppSettings& settings)
 		LOG_ENGINE_FATAL("Application failed to initialize...");
 		return;
 	}
+
+	m_Renderer->SetClearColor(glm::vec4(1.f, 0.7f, 0.f, 1.f));
 }
 
 void Application::StartApp()
@@ -34,38 +37,21 @@ void Application::StartApp()
 	// that was defined in your application for example "Sandbox"
 	Init();
 
-	Timer timer;
-	double dt = 0;
+	DeltaClock dt;
 
 	// The "Game-loop"
 	while (m_Running)
 	{
-		// Start timer
-		timer.Start();
-		
 		// Getting window events
 		m_Window.PollEvent();
-
-		m_Renderer->ClearScreen(glm::vec4(1.f, 0.7f, 0.f, 1.f));
-
-		// [TODO] Handle Events
 
 		// Handling input
 		Input(m_InputHandler);
 		m_InputHandler.ClearInputStatus();
 
-		// Update code
-		Update(dt);
-
-		// Render to screen
-		Render();
-		RenderGUI();
-
-		m_Renderer->Render();
-
-		// End timer
-		timer.Stop();
-		dt = timer.GetMilliseconds();
+		m_Renderer->BeginFrame();
+		Update(dt.GetSeconds());
+		m_Renderer->EndFrame();
 	}
 
 	// Cleaning up the application
@@ -105,6 +91,8 @@ void Application::SetupGLFWCallback()
 		
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 		app->m_InputHandler.SetKeyStatus(key, action);
+
+		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	});
 
 	// Mouse input
@@ -115,6 +103,8 @@ void Application::SetupGLFWCallback()
 		// TODO: Action: Pressed and released
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 		app->m_InputHandler.SetKeyStatus(button, action);
+
+		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	});
 }
 

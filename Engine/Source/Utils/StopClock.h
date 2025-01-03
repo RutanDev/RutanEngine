@@ -5,17 +5,17 @@ namespace Rutan
 {
 
 	
-class Timer
+class StopClock
 {
 public:
-	Timer();
-	~Timer() = default;
+	StopClock();
+	~StopClock() = default;
 
 	void Start();
 	void Stop();
-	double GetMicroseconds();
-	double GetMilliseconds();
-	double GetSeconds();
+	f64 GetSeconds();
+	f64 GetMilliseconds();
+	f64 GetMicroseconds();
 
 private:
 	bool m_IsRunning;

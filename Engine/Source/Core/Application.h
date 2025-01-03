@@ -17,7 +17,7 @@ struct AppSettings
 	bool		Fullscreen	 = false;
 	bool		VSync		 = true;
 	bool		Resizable	 = true;
-	bool		EnableImGui  = true;
+	bool		EnableImGui  = true; //TODO: Make it possible to disable ImGui for performance
 };
 
 
@@ -42,11 +42,7 @@ public:
 	virtual void Input(Rutan::IO::InputHandler& inputHandler) = 0;
 	// Update the scene with all the entities
 	virtual void Update(f64 dt) = 0;
-	// Render the models
-	virtual void Render() = 0;
-	// Render imGUI stuff
-	virtual void RenderGUI() = 0;
-
+	
 private:
 	void SetupGLFWCallback();
 
