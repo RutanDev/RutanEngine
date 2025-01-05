@@ -6,6 +6,7 @@
 #include <backends/imgui_impl_dx11.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <imgui_internal.h>
 
 // Link the libs
 #pragma comment(lib, "d3d11.lib")
@@ -110,6 +111,8 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 
 	if (!ImGui_ImplGlfw_InitForOther(window.GetWindowHandle(), true))
 	{

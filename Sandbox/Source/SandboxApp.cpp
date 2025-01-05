@@ -67,9 +67,49 @@ public:
 	virtual void Update(f64 dt) override
 	{
 		// Scene.Update();
+		
+		// Setting up the editor-window
+        if (ImGui::BeginMainMenuBar()) 
+		{
+            if (ImGui::BeginMenu("File")) 
+			{
+                if (ImGui::MenuItem("New project")) {}
+                if (ImGui::MenuItem("Open", "Ctrl+O")) {}
+                if (ImGui::MenuItem("Save", "Ctrl+S")) {}
+                if (ImGui::MenuItem("Save as..")) {}
+				ImGui::Separator();
+				if (ImGui::MenuItem("Quit")) 
+				{
+					StopApp();
+				}
+                ImGui::EndMenu();
+            }
+			if (ImGui::BeginMenu("Edit"))
+			{
+				// TODO
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Settings"))
+			{
+				// TODO
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Help"))
+			{
+				if (ImGui::MenuItem("About")) { /*Some data about this application?*/ }
+				if (ImGui::MenuItem("ImGui DemoWindow")) ImGui::ShowDemoWindow();
+				ImGui::EndMenu();
+			}
+            ImGui::EndMainMenuBar();
+        }
 
-		// Use ImGui in here if needed :)
-		ImGui::ShowDemoWindow();		
+		// TODO: Structure it better and lock the windows into place
+		ImGui::Begin("Scene Hierarchy");
+		ImGui::End();
+		ImGui::Begin("Entity details");
+		ImGui::End();
+		ImGui::Begin("Content Browser");
+		ImGui::End();
 	}
 
 private:

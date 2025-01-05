@@ -1,18 +1,24 @@
 [submodule "Vendor/spdlog"]
 	path = Vendor/spdlog
 	url = https://github.com/gabime/spdlog
+	branch = origin/master
 [submodule "Vendor/imgui"]
 	path = Vendor/imgui
 	url = https://github.com/ocornut/imgui
+	branch = origin/docking
 [submodule "Vendor/stb"]
 	path = Vendor/stb
 	url = https://github.com/nothings/stb
+	branch = origin/master
 [submodule "Vendor/entt"]
 	path = Vendor/entt
 	url = https://github.com/skypjack/entt
+	branch = origin/master
 [submodule "Vendor/glfw"]
 	path = Vendor/glfw
 	url = https://github.com/glfw/glfw
+	branch = origin/master
 [submodule "Vendor/glm"]
 	path = Vendor/glm
 	url = https://github.com/icaven/glm
+	branch = origin/master
