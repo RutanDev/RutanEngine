@@ -1,5 +1,10 @@
 #pragma once
 #include <d3d11.h>
+#include <Graphics/D3D11/RenderData.h>
+
+#include <wrl/client.h>
+template<typename T>
+using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 /*
 Setup a material/shader-file: BasicShader.mat
@@ -13,53 +18,53 @@ Setup a material/shader-file: BasicShader.mat
 	OutputMerger???
 */
 
-
 namespace Rutan::Graphics
 {
 
+// Vertexshader + Pixelshader
 class Shader 
 {
 public:
-	Shader(/* Device, Materialpath */);	//TODO: Send in material-filename
-	~Shader() = default;
+	//TODO: Send in material-filename
+	Shader() = default;
 
-	void Bind(ID3D11DeviceContext* deviceContext);
-	void UnBind(ID3D11DeviceContext* deviceContext);
+	bool Load(ID3D11Device* device,
+		      const std::filesystem::path& vertexShaderPath, 
+		      const std::filesystem::path& pixelShaderPath);
 
+	void Draw(ID3D11DeviceContext* deviceContext, const RenderData& renderData);
 
-	// TODO: Will be private later on
-	bool CreateVertexShader(ID3D11Device* device,
-							const std::filesystem::path& filepath);
-	bool CreatePixelShader(ID3D11Device* device,
-						   const std::filesystem::path& filepath);
+	// TODO: Get the vertexStruct from shaderblob
 
-	// Send in a vertexstruct??? Can it be read from the blobb???
-	bool CreateInputLayout(ID3D11Device* device, 
-						   D3D11_INPUT_ELEMENT_DESC* vertexLayout, 
-						   u32 nrOfInputElements);
-
-	bool CreateVertexBuffer(ID3D11Device* device, void* data, u32 byteWidth);
-
-	void SetViewport(D3D11_VIEWPORT* viewport);
-
-	
 private:
 	bool CompileShader(const std::filesystem::path& filepath,
 					   const std::string& entryPoint,
 					   const std::string& profile,
      				   ComPtr<ID3DBlob>& shaderBlob);
 
+	DXGI_FORMAT GetDXGIFormat(const std::string& semanticName, UINT mask) const;
+	
+	bool CreateInputLayout(ID3D11Device* device, 
+		                   ID3DBlob* blob);
 
 private:
 	ComPtr<ID3D11InputLayout>  m_InputLayout;
 	ComPtr<ID3D11VertexShader> m_VertexShader;
-	ComPtr<ID3DBlob>		   m_VertexBlob;
-	ComPtr<ID3D11Buffer>	   m_VertexBuffer;
 	ComPtr<ID3D11PixelShader>  m_PixelShader;
-
-	// Low prio
-	// ComputeShader
-	// GeometryShader - prob. not necessary
 };
+
+
+class ComputeShader
+{
+public:
+	ComputeShader(/*Path to the shader*/) = default; // For now
+	~ComputeShader() = default;
+
+private:
+	ComPtr<ID3D11ComputeShader> m_ComputeShader;
+
+};
+
+
 
 }

@@ -1,12 +1,12 @@
 #include "EnginePCH.h"
-#include <Graphics/D3D11/D3D11Graphics.h>
+#include <Graphics/D3D11/D3D11Renderer.h>
 #include <Core/Window.h>
-#include <glm/vec3.hpp>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_dx11.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <imgui_internal.h>
+#include <glm/vec3.hpp>
 
 // Link the libs
 #pragma comment(lib, "d3d11.lib")
@@ -20,7 +20,7 @@ namespace Rutan::Graphics
 {
 
 
-D3D11Graphics::D3D11Graphics()
+D3D11Renderer::D3D11Renderer()
 	: m_DXGIFactory(nullptr)
 	, m_Device(nullptr)
 	, m_DeviceContext(nullptr)
@@ -31,14 +31,14 @@ D3D11Graphics::D3D11Graphics()
 {
 }
 
-D3D11Graphics::~D3D11Graphics()
+D3D11Renderer::~D3D11Renderer()
 {
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
 
-bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath)
+bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath)
 {
 	// Create a DXGI factory
 	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&m_DXGIFactory))))
@@ -68,8 +68,14 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 		return false;
 	}
 
-	glm::uvec2 windowSize    = window.GetSize();
+	glm::uvec2 windowSize = window.GetSize();
 	
+	// HIGHER FRAMERATE
+	// DXGI_SWAP_EFFECT_DISCARD
+	// Buffercount 1
+	// Numerator = 0
+	// Denumorator = 0
+
 	// Creating the swapchain
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 	swapChainDesc.Width					= windowSize.x;
@@ -81,11 +87,13 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 	swapChainDesc.BufferCount			= 2;	// Doublebuffering to avoid tearing and flickers
 	swapChainDesc.SwapEffect			= DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.Scaling				= DXGI_SCALING::DXGI_SCALING_STRETCH;
-	swapChainDesc.Flags					= {};
+	swapChainDesc.Flags					= 0;
 
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFullscreenDesc = {};
 	swapChainFullscreenDesc.Windowed = true; // TODO: change this if we want fullscreen later
-	//swapChainFullscreenDesc.RefreshRate	 //	TODO: maybe set it here?
+	// NOT DOING MUCH FOR NOW...
+	/*swapChainFullscreenDesc.RefreshRate.Numerator = 300;
+	swapChainFullscreenDesc.RefreshRate.Denominator = 1;*/
 
 	result = m_DXGIFactory->CreateSwapChainForHwnd(m_Device.Get(),
 												   glfwGetWin32Window(window.GetWindowHandle()),
@@ -104,6 +112,15 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 	{
 		return false;
 	}
+
+	// Creating the camera buffer on the GPU
+	D3D11_BUFFER_DESC cameraDesc = {};
+	cameraDesc.ByteWidth = sizeof(glm::mat4x4);
+	cameraDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cameraDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	m_Device->CreateBuffer(&cameraDesc, nullptr, &m_CameraBuffer);
+
 
 	// Setup ImGui
 	IMGUI_CHECKVERSION();
@@ -138,63 +155,44 @@ bool D3D11Graphics::Init(const Rutan::Core::Window& window, const std::filesyste
 	m_Viewport.MinDepth = 0.f;
 	m_Viewport.MaxDepth = 1.f;
 
+
+	m_TestShader.Load(m_Device.Get(), shadersPath.wstring() + L"/DefaultVS.hlsl", shadersPath.wstring() + L"/DefaultPS.hlsl");
+
 	struct VertexPositionColor
 	{
 		glm::vec3 position;
-		glm::vec3 color;
+		glm::vec4 color;
+		// color as u32? u8 for each channel
 	};
-
-	bool createdShader = false;
-	createdShader |= m_TestShader.CreateVertexShader(m_Device.Get(), shadersPath.wstring() + L"/DefaultVS.hlsl");
-	createdShader |= m_TestShader.CreatePixelShader(m_Device.Get(),  shadersPath.wstring() + L"/DefaultPS.hlsl");
-
-
-	// Automate this somehow as it looks like shit
-	/*
-		The plan
-		* Send in a struct to inputLayoutFunction
-		* Parser - check row by row
-			* what type is it?
-			* dictionary-map from typically used types to DXGI_FORMAT
-			* SemanticName??? How to handle it???
-	*/ 
-	
-	D3D11_INPUT_ELEMENT_DESC vertexInputLayoutInfo[2] =
-	{
-		{
-			"position",
-			0,
-			DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
-			0,
-			offsetof(VertexPositionColor, position),
-			D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
-			0
-		},
-		{
-			"color",
-			0,
-			DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
-			0,
-			offsetof(VertexPositionColor, color),
-			D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
-			0
-		},
-	};
-	createdShader |= m_TestShader.CreateInputLayout(m_Device.Get(), vertexInputLayoutInfo, 2);
-
 	constexpr VertexPositionColor vertices[] =
 	{
-		glm::vec3(  0.0f,  0.5f, 0.0f ), glm::vec3( 1.0f, 0.0f, 0.0f ),
-		glm::vec3(  0.5f, -0.5f, 0.0f ), glm::vec3( 0.0f, 1.0f, 0.0f ),
-		glm::vec3( -0.5f, -0.5f, 0.0f ), glm::vec3( 0.0f, 0.0f, 1.0f )
+		glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec4(1.0f, 0.0f, 0.0f, 1.f),
+		glm::vec3( 0.5f, -0.5f, -0.5f), glm::vec4(1.0f, 1.0f, 0.0f, 1.f),
+		glm::vec3( 0.5f,  0.5f, -0.5f), glm::vec4(1.0f, 0.0f, 1.0f, 1.f),
+		glm::vec3(-0.5f,  0.5f, -0.5f), glm::vec4(1.0f, 1.0f, 1.0f, 1.f),
+        glm::vec3(-0.5f, -0.5f,  0.5f), glm::vec4(0.0f, 0.0f, 0.0f, 1.f),
+        glm::vec3( 0.5f, -0.5f,  0.5f), glm::vec4(0.0f, 0.5f, 0.0f, 1.f),
+        glm::vec3( 0.5f,  0.5f,  0.5f), glm::vec4(0.0f, 0.5f, 0.5f, 1.f),
+        glm::vec3(-0.5f,  0.5f,  0.5f), glm::vec4(0.5f, 0.5f, 0.5f, 1.f) 
 	};
 
-	createdShader |= m_TestShader.CreateVertexBuffer(m_Device.Get(), (void*)vertices, sizeof(vertices));
+	std::vector<u32> indices =
+	{
+        0, 2, 1, 0, 3, 2,  // back face
+        4, 5, 6, 4, 6, 7,  // front face
+        0, 1, 5, 0, 5, 4,  // bottom face
+        3, 7, 6, 3, 6, 2,  // top face
+        0, 4, 7, 0, 7, 3,  // left face
+        1, 2, 6, 1, 6, 5   // right face
+	};
 
-	return createdShader;
+	m_TestRenderData.CreateVertexBuffer(m_Device.Get(), vertices, sizeof(vertices) / sizeof(VertexPositionColor), sizeof(VertexPositionColor));
+	m_TestRenderData.CreateIndexBuffer(m_Device.Get(), indices);
+
+	return true;
 }
 
-void D3D11Graphics::OnResize(const glm::uvec2& resolution)
+void D3D11Renderer::OnResize(const glm::uvec2& resolution)
 {
 	// Cleaning up old data
 	m_DeviceContext->Flush();
@@ -217,12 +215,23 @@ void D3D11Graphics::OnResize(const glm::uvec2& resolution)
 	CreateSwapchainResources();
 }
 
-void D3D11Graphics::SetClearColor(const glm::vec4& color)
+void D3D11Renderer::SetClearColor(const glm::vec4& color)
 {
 	m_ClearColor = color;
 }
 
-void D3D11Graphics::BeginFrame()
+void D3D11Renderer::SetCamera(const glm::mat4x4& cameraMatrix) const
+{
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	m_DeviceContext->Map(m_CameraBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	memcpy(mapped.pData, &cameraMatrix, sizeof(cameraMatrix));
+	m_DeviceContext->Unmap(m_CameraBuffer.Get(), 0);
+
+	// Bind camera to location 0
+	m_DeviceContext->VSSetConstantBuffers(0, 1, m_CameraBuffer.GetAddressOf());
+}
+
+void D3D11Renderer::BeginFrame()
 {
 	// Clearing the screen
 	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
@@ -230,9 +239,7 @@ void D3D11Graphics::BeginFrame()
 	m_DeviceContext->RSSetViewports(1, &m_Viewport);
 	
 	// TODO: Render all the commands that was queue up
-	// TODO: Loop through all the shaders
-	m_TestShader.Bind(m_DeviceContext.Get());
-	m_DeviceContext->Draw(3, 0);
+	m_TestShader.Draw(m_DeviceContext.Get(), m_TestRenderData);
 
 	// Prepare for next ImGui frame
 	ImGui_ImplDX11_NewFrame();
@@ -240,17 +247,17 @@ void D3D11Graphics::BeginFrame()
 	ImGui::NewFrame();
 }
 
-void D3D11Graphics::EndFrame()
+void D3D11Renderer::EndFrame()
 {
 	// Draw ImGui
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	
 	// TODO: Set vsync enabled/disabled from some setting
-	m_SwapChain->Present(1, 0);
+	m_SwapChain->Present(0, 0);
 }
 
-bool D3D11Graphics::CreateSwapchainResources()
+bool D3D11Renderer::CreateSwapchainResources()
 {
 	ComPtr<ID3D11Texture2D> backBuffer = nullptr;
 	if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))))
@@ -267,7 +274,7 @@ bool D3D11Graphics::CreateSwapchainResources()
 	return true;
 }
 
-void D3D11Graphics::DestroySwapchainResources()
+void D3D11Renderer::DestroySwapchainResources()
 {
 	m_RenderTargetView.Reset();
 }

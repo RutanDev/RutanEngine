@@ -2,7 +2,6 @@
 #include <Core/Application.h>
 #include <Utils/DeltaClock.h>
 #include <Platform/Platform.h>
-#include <Graphics/D3D11/D3D11Graphics.h>
 #include <backends/imgui_impl_glfw.h>
 #include <GLFW/glfw3.h>
 
@@ -14,11 +13,10 @@ namespace Rutan::Core
 Application::Application(const Rutan::Core::AppSettings& settings)
 	: m_Running(true)
 	, m_Window(settings)
-	, m_Renderer(std::make_unique<Graphics::D3D11Graphics>())
 {
 	m_Running &= m_Window.Init();
-	m_Running &= m_InputHandler.Init(m_Window.GetWindowHandle());
-	m_Running &= m_Renderer->Init(m_Window, m_DefaultPaths.ShaderPath);
+	m_Running &= InputHandler.Init(m_Window.GetWindowHandle());
+	m_Running &= m_Renderer.Init(m_Window, m_DefaultPaths.ShaderPath);
 	SetupGLFWCallback();
 
 	// Check that everything was initialized
@@ -28,7 +26,7 @@ Application::Application(const Rutan::Core::AppSettings& settings)
 		return;
 	}
 
-	m_Renderer->SetClearColor(glm::vec4(1.f, 0.7f, 0.f, 1.f));
+	m_Renderer.SetClearColor(glm::vec4(1.f, 0.7f, 0.f, 1.f));
 }
 
 void Application::StartApp()
@@ -45,13 +43,16 @@ void Application::StartApp()
 		// Getting window events
 		m_Window.PollEvent();
 
-		// Handling input
-		Input(m_InputHandler);
-		m_InputHandler.ClearInputStatus();
+		SceneHandler.UpdateSystems();
 
-		m_Renderer->BeginFrame();
+		// TODO: Only update when new data has been recieved
+		m_Renderer.SetCamera(SceneHandler.GetCameraMatrix());
+
+		m_Renderer.BeginFrame();
 		Update(dt.GetSeconds());
-		m_Renderer->EndFrame();
+		m_Renderer.EndFrame();
+
+		InputHandler.ClearInputStatus();
 	}
 
 	// Cleaning up the application
@@ -81,7 +82,7 @@ void Application::SetupGLFWCallback()
 	glfwSetFramebufferSizeCallback(windowHandle, [](GLFWwindow* window, int width, int height)
 	{
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->m_Renderer->OnResize(glm::uvec2(width, height));
+		app->m_Renderer.OnResize(glm::uvec2(width, height));
 	});
 
 	// Keyboard input
@@ -90,7 +91,7 @@ void Application::SetupGLFWCallback()
 		if (key == GLFW_KEY_UNKNOWN) return;
 		
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->m_InputHandler.SetKeyStatus(key, action);
+		app->InputHandler.SetKeyStatus(key, action);
 
 		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	});
@@ -102,7 +103,7 @@ void Application::SetupGLFWCallback()
 
 		// TODO: Action: Pressed and released
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->m_InputHandler.SetKeyStatus(button, action);
+		app->InputHandler.SetKeyStatus(button, action);
 
 		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	});

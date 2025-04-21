@@ -2,9 +2,11 @@
 #include <Core/Window.h>
 #include <Core/Types.h>
 #include <IO/InputHandling.h>
-#include <Graphics/Renderer.h>
 #include <Utils/DefaultPaths.h>
+#include <Scene/SceneHandler.h>
+#include <Graphics/D3D11/D3D11Renderer.h>
 #include <memory>
+
 
 namespace Rutan::Core
 {
@@ -38,28 +40,25 @@ public:
 	virtual void Init() = 0;
 	// Clean up data when closing application
 	virtual void Clean() = 0;
-	// Setup how input should be handled
-	virtual void Input(Rutan::IO::InputHandler& inputHandler) = 0;
 	// Update the scene with all the entities
 	virtual void Update(f64 dt) = 0;
 	
 private:
 	void SetupGLFWCallback();
 
+// Can be used in the application
+protected:
+	IO::InputHandler    InputHandler;
+	Scene::SceneHandler SceneHandler;
+	// AudioSystem/AudioHandler
+	// Some handler for adding Shaders?
+	// Some handler for adding scripts?
+
 private:
-	bool                m_Running;
-	Utils::DefaultPaths m_DefaultPaths;
-	Window              m_Window;
-	IO::InputHandler    m_InputHandler;
-
-	// - Closest contact with the Graphics API
-	std::unique_ptr<Graphics::Renderer> m_Renderer;
-
-	// Scenehandler
-	// - Using an ECS with all the components.
-
-	// ScriptComponent
-	// - Update anything if needed
+	bool                    m_Running;
+	Utils::DefaultPaths     m_DefaultPaths;
+	Window                  m_Window;
+	Graphics::D3D11Renderer m_Renderer;
 
 };
 

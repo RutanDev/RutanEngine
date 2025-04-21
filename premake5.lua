@@ -49,10 +49,10 @@ project "Engine"
 		"%{prj.name}",
 		"%{prj.name}/Source",
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.entt}",
 		"%{IncludeDir.glfw}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.imgui}"
+		"%{IncludeDir.imgui}",
+		"%{IncludeDir.entt}"
 	}
 	
 	libdirs 
@@ -132,7 +132,8 @@ project "Sandbox"
 		"Engine/Source",
 		"%{IncludeDir.spdlog}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.imgui}"
+		"%{IncludeDir.imgui}",
+		"%{IncludeDir.entt}"
 	}
 	
 	links

@@ -30,13 +30,14 @@ void InputHandler::SetKeyStatus(u16 key, u8 status)
 
 bool InputHandler::IsKeyPressed(u16 key)
 {
-	return m_InputStatus[key] == KeyStatus::Press;
+	return m_InputStatus[key] == KeyStatus::Press || 
+		   m_InputStatus[key] == KeyStatus::Repeat;
 }
 
-bool InputHandler::IsKeyHeld(u16 key)
-{
-	return m_InputStatus[key] == KeyStatus::Repeat;
-}
+//bool InputHandler::IsKeyHeld(u16 key)
+//{
+//	return m_InputStatus[key] == KeyStatus::Repeat;
+//}
 
 bool InputHandler::IsKeyReleased(u16 key)
 {

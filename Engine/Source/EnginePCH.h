@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <filesystem>
-#include <wrl.h> // ComPtr
 
 #ifdef RUTAN_WINDOWS
 	#define VC_EXTRALEAN
@@ -20,9 +19,6 @@
 
 	#define GLFW_INCLUDE_NONE
 	#define GLFW_EXPOSE_NATIVE_WIN32
-
-	template<typename T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
 #endif
 
 // Math

@@ -5,121 +5,148 @@
 namespace Rutan::Graphics
 {
 
-Shader::Shader()
+bool Shader::Load(ID3D11Device* device,
+		          const std::filesystem::path& vertexShaderPath, 
+		          const std::filesystem::path& pixelShaderPath)
 {
-	// Init from the materialfile
+    ComPtr<ID3DBlob> vertexBlob;
+    ComPtr<ID3DBlob> pixelBlob;
+    
+    // Compiling shaders
+    bool compiled = true;
+    compiled |= CompileShader(vertexShaderPath, "Main", "vs_5_0", vertexBlob);
+    compiled |= CompileShader(pixelShaderPath, "Main", "ps_5_0", pixelBlob);
+    if (!compiled)
+    {
+        LOG_ENGINE_ERROR("D3D11: Failed to compile shader...");
+        return false;
+    }
+
+    // Creating shaders
+    HRESULT result = 0;
+    result |= device->CreateVertexShader(vertexBlob->GetBufferPointer(),
+                                         vertexBlob->GetBufferSize(),
+                                         nullptr,
+                                         &m_VertexShader);
+    result |= device->CreatePixelShader(pixelBlob->GetBufferPointer(),
+                                        pixelBlob->GetBufferSize(),
+                                        nullptr,
+                                        &m_PixelShader);
+    if (FAILED(result)) 
+    {
+        LOG_ENGINE_ERROR("D3D11: Failed to create shader...");
+        return false;
+    }
+
+    // Input Layout
+    if (!CreateInputLayout(device, vertexBlob.Get()))
+    {
+        LOG_ENGINE_ERROR("D3D11: Failed to create input layout...");
+        return false;
+    }
+
+    return true;
 }
 
-void Shader::Bind(ID3D11DeviceContext* deviceContext)
+void Shader::Draw(ID3D11DeviceContext* deviceContext, const RenderData& renderData)
 {
-    // Bind InputLayout
+    // Binding data
     deviceContext->IASetInputLayout(m_InputLayout.Get());
-
-
-    u32 vertexStride = (4 * 3) * 2; // TODO: Precalc when setting it up
-    u32 vertexOffset = 0;
-    deviceContext->IASetVertexBuffers(0, 1,
-                                      m_VertexBuffer.GetAddressOf(),
-                                      &vertexStride,
-                                      &vertexOffset);
-
-    // TODO: Setup later
-    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // TODO: Setup later
     deviceContext->VSSetShader(m_VertexShader.Get(), nullptr, 0);
     deviceContext->PSSetShader(m_PixelShader.Get(), nullptr, 0);
-}
+    renderData.Bind(deviceContext);
 
-void Shader::UnBind(ID3D11DeviceContext* deviceContext)
-{
+
+    // Draw
+    deviceContext->DrawIndexed(renderData.GetIndexCount(), 0, 0);
+
+
+    // Unbind data
     deviceContext->IASetInputLayout(nullptr);
-    deviceContext->IASetVertexBuffers(0, 1, nullptr, 0, 0);
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED);
     deviceContext->VSSetShader(nullptr, nullptr, 0);
     deviceContext->PSSetShader(nullptr, nullptr, 0);
-    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED);
+    renderData.UnBind(deviceContext);
 
     // Or maybe just use this function???
     //deviceContext->ClearState();
 }
 
-bool Shader::CreateInputLayout(ID3D11Device* device, D3D11_INPUT_ELEMENT_DESC* vertexLayout, u32 nrOfInputElements)
+DXGI_FORMAT Shader::GetDXGIFormat(const std::string& semanticName, UINT mask) const
 {
-    if (FAILED(device->CreateInputLayout(vertexLayout,
-                                         nrOfInputElements,
-                                         m_VertexBlob->GetBufferPointer(),
-                                         m_VertexBlob->GetBufferSize(),
-                                         &m_InputLayout)))
-    {
-        LOG_ENGINE_ERROR("D3D11: Failed to create vertex input layout");
-        return false;
-    }
+    if (semanticName == "POSITION")
+        return DXGI_FORMAT_R32G32B32_FLOAT;
 
-    return true;
+    /*else if (semanticName == "COLOR")
+        return DXGI_FORMAT_R8G8B8A8_UNORM;*/
+    else if (semanticName == "COLOR")
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+    else if (semanticName == "HDRCOLOR")
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+    else if (semanticName == "NORMAL")
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+    else if (semanticName == "TANGENT")
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+    else if (semanticName == "BITANGENT")
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+
+    else if (semanticName == "TEXCOORD")
+        return DXGI_FORMAT_R32G32_FLOAT;
+
+    else if (semanticName == "INSTANCEID")
+        return DXGI_FORMAT_R32_UINT;
+
+    // No matching name - go for default
+    else if (mask == 0x1)   // 0001
+        return DXGI_FORMAT_R32_FLOAT;
+    else if (mask == 0x3)   // 0011
+        return DXGI_FORMAT_R32G32_FLOAT;
+    else if (mask == 0x7)   // 0111
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+    else if (mask == 0xF)   // 1111
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+    // Epic fail...
+    return DXGI_FORMAT::DXGI_FORMAT_UNKNOWN;
 }
 
-bool Shader::CreateVertexBuffer(ID3D11Device* device, void* data, u32 byteWidth)
+bool Shader::CreateInputLayout(ID3D11Device* device, ID3DBlob* vsBlob)
 {
-    D3D11_BUFFER_DESC bufferInfo = {};
-    bufferInfo.ByteWidth = byteWidth;
-    bufferInfo.Usage = D3D11_USAGE::D3D11_USAGE_IMMUTABLE;
-    bufferInfo.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
+    // Reflection makes it possible to inspect metadata in the shadercode
+    ComPtr<ID3D11ShaderReflection> reflection;
+    D3DReflect(vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), IID_PPV_ARGS(&reflection));
 
-    D3D11_SUBRESOURCE_DATA resourceData = {};
-    resourceData.pSysMem = data;
-    
-    if (FAILED(device->CreateBuffer(&bufferInfo,
-                                    &resourceData,
-                                    &m_VertexBuffer)))
+    // Get input signature size and count
+    D3D11_SHADER_DESC shaderDesc;
+    reflection->GetDesc(&shaderDesc);
+
+    std::vector<D3D11_INPUT_ELEMENT_DESC> layout;
+    layout.reserve((size_t)shaderDesc.InputParameters);
+
+    // Loop through all input parameters and create the input layout
+    for (UINT i = 0; i < shaderDesc.InputParameters; ++i) 
     {
-        LOG_ENGINE_FATAL("D3D11: Failed to create triangle vertex buffer");
-        return false;
+        D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+        reflection->GetInputParameterDesc(i, &paramDesc);
+
+        D3D11_INPUT_ELEMENT_DESC elementDesc;
+        elementDesc.SemanticName = paramDesc.SemanticName;
+        elementDesc.SemanticIndex = paramDesc.SemanticIndex;
+        elementDesc.Format = GetDXGIFormat(paramDesc.SemanticName, paramDesc.Mask); // Custom
+        elementDesc.InputSlot = 0;
+        elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT; // Automatically calculate offset
+        elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;     // TODO: What if instancing?
+        elementDesc.InstanceDataStepRate = 0;
+
+        layout.push_back(elementDesc);
     }
 
-    return true;
-}
-
-bool Shader::CreateVertexShader(ID3D11Device* device, const std::filesystem::path& filepath)
-{
-    if (!CompileShader(filepath, "Main", "vs_5_0", m_VertexBlob))
-    {
-        return false;
-    }
-
-    HRESULT result = device->CreateVertexShader(m_VertexBlob->GetBufferPointer(),
-                                                m_VertexBlob->GetBufferSize(),
-                                                nullptr,
-                                                &m_VertexShader);
-
-    if (FAILED(result))
-    {
-        LOG_ENGINE_ERROR("D3D11: Failed to compile vertex shader");
-        return false;
-    }
-
-    return true;
-}
-
-bool Shader::CreatePixelShader(ID3D11Device* device, const std::filesystem::path& filepath)
-{
-    ComPtr<ID3DBlob> pixelShaderBlob;
-
-    if (!CompileShader(filepath, "Main", "ps_5_0", pixelShaderBlob))
-    {
-        return false;
-    }
-
-    HRESULT result = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(),
-                                               pixelShaderBlob->GetBufferSize(),
-                                               nullptr,
-                                               &m_PixelShader);
-
-    if (FAILED(result))
-    {
-        LOG_ENGINE_ERROR("D3D11: Failed to compile pixel shader");
-        return false;
-    }
-
-    return true;
+    // Create the input layout based on the reflection data
+    HRESULT result = device->CreateInputLayout(layout.data(), (UINT)layout.size(), vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), &m_InputLayout);
+    return SUCCEEDED(result);
 }
 
 bool Shader::CompileShader(const std::filesystem::path& filepath, const std::string& entryPoint, const std::string& profile, ComPtr<ID3DBlob>& shaderBlob)
