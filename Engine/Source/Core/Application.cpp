@@ -41,7 +41,7 @@ void Application::StartApp()
 	while (m_Running)
 	{
 		// Getting window events
-		m_Window.PollEvent();
+		m_Window.PollEvents();
 
 		SceneHandler.UpdateSystems();
 
@@ -51,8 +51,6 @@ void Application::StartApp()
 		m_Renderer.BeginFrame();
 		Update(dt.GetSeconds());
 		m_Renderer.EndFrame();
-
-		InputHandler.ClearInputStatus();
 	}
 
 	// Cleaning up the application
@@ -83,30 +81,7 @@ void Application::SetupGLFWCallback()
 	{
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 		app->m_Renderer.OnResize(glm::uvec2(width, height));
-	});
-
-	// Keyboard input
-	glfwSetKeyCallback(windowHandle, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-	{
-		if (key == GLFW_KEY_UNKNOWN) return;
-		
-		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->InputHandler.SetKeyStatus(key, action);
-
-		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
-	});
-
-	// Mouse input
-	glfwSetMouseButtonCallback(windowHandle, [](GLFWwindow* window, int button, int action, int mods)
-	{
-		if (button == GLFW_KEY_UNKNOWN) return;
-
-		// TODO: Action: Pressed and released
-		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->InputHandler.SetKeyStatus(button, action);
-
-		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
-	});
+	});	
 }
 
 }

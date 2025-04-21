@@ -66,7 +66,7 @@ bool Window::IsOpen()
 	return !glfwWindowShouldClose(m_GLFWwindow);
 }
 
-void Window::PollEvent()
+void Window::PollEvents()
 {
 	glfwPollEvents();
 }

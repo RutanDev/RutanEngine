@@ -19,7 +19,7 @@ public:
 	~Window();
 	bool Init();
 	bool IsOpen();
-	void PollEvent();
+	void PollEvents();
 
 	// Adjust window settings
 	void SetName(const std::string& name);

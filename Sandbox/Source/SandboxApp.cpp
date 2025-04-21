@@ -73,14 +73,20 @@ public:
 				cam->Move(-cam->Up() * camVelocity);
 		}
 		
+		/*for (u16 i = Rutan::IO::Keyboard::FIRST; i < Rutan::IO::Keyboard::LAST; i++)
+		{
+			if (InputHandler.IsKeyPressed(i))
+				LOG_INFO("Keyboard: Pressed once {0}", i);
+			if (InputHandler.IsKeyReleased(i))
+				LOG_INFO("Keyboard: Released once {0}", i);
+		}*/
+
 		// Iterate the mouse buttons
 		/*for (u16 i = Rutan::IO::Mouse::FIRST; i < Rutan::IO::Mouse::LAST; i++)
 		{
 			if (InputHandler.IsKeyPressed(i))
 				LOG_INFO("Mouse: Pressed once {0}", i);
-			else if (InputHandler.IsKeyHeld(i))
-				LOG_INFO("Mouse: Holding down {0}", i);
-			else if (InputHandler.IsKeyReleased(i))
+			if (InputHandler.IsKeyReleased(i))
 				LOG_INFO("Mouse: Released once {0}", i);
 		}*/
 
