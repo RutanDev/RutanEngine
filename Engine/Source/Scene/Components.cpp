@@ -10,12 +10,18 @@ namespace Rutan::Scene::Components
     {   
     }
 
-    void Camera::Move(const glm::vec3& velocity)
+    void Camera::Rotate(float yaw, float pitch, float roll)
     {
-        Position += velocity;
-        Target += velocity;
+        Yaw   = glm::mod(Yaw + yaw, 360.f);
+        Pitch += pitch;
+        Pitch = glm::clamp(Pitch, -89.9f, 89.9f);
 
-        // Update the GPU
+        Forward.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        Forward.y = sin(glm::radians(Pitch));
+        Forward.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+        Forward = glm::normalize(Forward);
+        Right   = glm::normalize(glm::cross(Up, Forward));
+
         NeedUpdate = true;
     }
     const glm::mat4x4 Camera::BuildProjectionMatrix() const
@@ -24,6 +30,6 @@ namespace Rutan::Scene::Components
     }
     const glm::mat4x4 Camera::BuildViewMatrix() const
     {
-        return glm::lookAtLH(Position, Target, Up());
+        return glm::lookAtLH(Position, Position + Forward, Up);
     }
 }

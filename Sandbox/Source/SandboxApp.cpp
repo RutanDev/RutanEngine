@@ -34,7 +34,6 @@ public:
 		cam.Resolution  = glm::uvec2(m_Settings.WindowWidth, m_Settings.WindowHeight);
 		cam.FieldOfView = 60.f;
 		cam.Position    = glm::vec3(0.f, 0.f, -5.f);
-		cam.Target      = glm::vec3(0.f, 0.f,  0.f);
 		cam.Active      = true;
 
 		// SetEntityModel(entity0, "TheModel.fbx");
@@ -57,20 +56,34 @@ public:
 				camSpeed *= 2.f;
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::AltLeft))
 				camSpeed *= 0.5;
-			float camVelocity = camSpeed * static_cast<float>(dt);
+			float camVelocity = float(camSpeed * dt);
 
+			// Keyboard movement
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::W))
-				cam->Move(cam->Forward() * camVelocity);
+				cam->MoveForward(camVelocity);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::S))
-				cam->Move(-cam->Forward() * camVelocity);
+				cam->MoveBackward(camVelocity);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::D))
-				cam->Move(cam->Right() * camVelocity);
+				cam->MoveRight(camVelocity);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::A))
-				cam->Move(-cam->Right() * camVelocity);
+				cam->MoveLeft(camVelocity);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Space))
-				cam->Move(cam->Up() * camVelocity);
+			    cam->MoveUp(camVelocity);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::ControlLeft))
-				cam->Move(-cam->Up() * camVelocity);
+				cam->MoveDown(camVelocity);
+
+			float rotationSpeed = 45.f; // 5 degrees per second?
+			float rotationVelocity = rotationSpeed * static_cast<float>(dt);
+			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Up))
+				cam->Rotate(0.f, rotationVelocity, 0.f);
+			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Down))
+				cam->Rotate(0.f, -rotationVelocity, 0.f);
+			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Left))
+				cam->Rotate(rotationVelocity, 0.f, 0.f);
+			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Right))
+				cam->Rotate(-rotationVelocity, 0.f, 0.f);
+
+			// TODO: Mouse later on
 		}
 		
 		/*for (u16 i = Rutan::IO::Keyboard::FIRST; i < Rutan::IO::Keyboard::LAST; i++)
