@@ -1,5 +1,28 @@
 TODO:
-
 * Use mouse for rotating the camera
 * Load in models
 * 
+
+
+Setup a pass
+* Which shaders are involved
+* Which constant buffers is going to be used and on what bindinglocation
+
+Example - terrain
+* vertexshader:
+* pixelshader: 
+* constantbuffer
+
+RenderPass
+* Can have multiple shaders
+ 
+For materials
+* 1 u32 with bits enabled/disabled if it has textures.
+ 
+Debugging in editor
+* See shader code
+* Disassemble code to assembly to check stuff - D3DDisassemble
+
+Performance
+* Default memory-allocator is bad...
+* Avoid vectors as much as possible
