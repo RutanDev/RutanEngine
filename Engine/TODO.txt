@@ -1,10 +1,11 @@
 TODO:
-* Use mouse for rotating the camera
 * Load in models
-* 
+* Experiment with NVRHI: https://github.com/NVIDIA-RTX/NVRHI
 
+Setup pipelines
+* Graphics
+* Compute
 
-Setup a pass
 * Which shaders are involved
 * Which constant buffers is going to be used and on what bindinglocation
 
