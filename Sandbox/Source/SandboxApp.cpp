@@ -72,7 +72,8 @@ public:
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::ControlLeft))
 				cam->MoveDown(camVelocity);
 
-			float rotationSpeed = 45.f; // 5 degrees per second?
+			// Rotate with keyboard
+			float rotationSpeed = 45.f;
 			float rotationVelocity = rotationSpeed * static_cast<float>(dt);
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Up))
 				cam->Rotate(0.f, rotationVelocity, 0.f);
@@ -83,7 +84,17 @@ public:
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::Right))
 				cam->Rotate(-rotationVelocity, 0.f, 0.f);
 
-			// TODO: Mouse later on
+			// Rotate with mouse
+			if (InputHandler.IsKeyPressed(Rutan::IO::Mouse::ButtonRight))
+			{
+				InputHandler.DisableCursor();
+				glm::vec2 mouseDelta = InputHandler.GetMouseDelta();
+				cam->Rotate(mouseDelta.x, mouseDelta.y, 0.f);
+			}
+			else 
+			{
+				InputHandler.EnableCursor();
+			}
 		}
 		
 		/*for (u16 i = Rutan::IO::Keyboard::FIRST; i < Rutan::IO::Keyboard::LAST; i++)
