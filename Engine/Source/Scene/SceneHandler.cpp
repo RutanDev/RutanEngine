@@ -12,22 +12,9 @@ SceneHandler::SceneHandler()
 
 void SceneHandler::UpdateSystems()
 {
-    for (auto [entity, camera] : m_Registry.view<Components::Camera>().each())
-    {
-        // Camera is not active, skip it
-        if (!camera.Active)
-        {
-            continue;
-        }
+    // Some systems NOT specific for your application
 
-        if (camera.NeedUpdate)
-        {
-            const auto& projectMat = camera.BuildProjectionMatrix();
-            const auto& viewMat = camera.BuildViewMatrix();
-            m_CameraMatrix = projectMat * viewMat;
-            camera.NeedUpdate = false;
-        }
-    }
+    // More like move every entity with: transform + velocity-components
 }
 
 Entity SceneHandler::CreateEntity()

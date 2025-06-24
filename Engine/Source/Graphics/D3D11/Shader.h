@@ -32,6 +32,8 @@ public:
 		      const std::filesystem::path& vertexShaderPath, 
 		      const std::filesystem::path& pixelShaderPath);
 
+	// Bind a constantbuffer?
+
 	void Draw(ID3D11DeviceContext* deviceContext, const RenderData& renderData);
 
 	// TODO: Get the vertexStruct from shaderblob

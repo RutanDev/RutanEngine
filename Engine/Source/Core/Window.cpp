@@ -77,10 +77,10 @@ void Window::SetName(const std::string& name)
 	glfwSetWindowTitle(m_GLFWwindow, m_Name.c_str());
 }
 
-void Window::SetSize(const glm::uvec2& windowSize)
+void Window::Resize(const glm::uvec2& resolution)
 {
-	m_WindowSize.x = windowSize.x;
-	m_WindowSize.y = windowSize.y;
+	m_WindowSize.x = resolution.x;
+	m_WindowSize.y = resolution.y;
 	glfwSetWindowSize(m_GLFWwindow, m_WindowSize.x, m_WindowSize.y);
 }
 

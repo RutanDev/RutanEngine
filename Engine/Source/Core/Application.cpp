@@ -45,9 +45,14 @@ void Application::StartApp()
 
 		SceneHandler.UpdateSystems();
 
-		// TODO: Only update when new data has been recieved
-		m_Renderer.SetCamera(SceneHandler.GetCameraMatrix());
+		// TODO: Make this cleaner
+		auto cam = SceneHandler.GetComponent<Rutan::Scene::Components::Camera>(ActiveCamera);
+		if (cam->NeedUpdate) 
+		{
+			m_Renderer.SetCamera(cam->BuildViewProjectionMatrix());
+		}
 
+		// TODO: Only update when new data has been recieved
 		m_Renderer.BeginFrame();
 		Update(dt.GetSeconds());
 		m_Renderer.EndFrame();
@@ -71,17 +76,19 @@ void Application::SetupGLFWCallback()
 	// Window was resized
 	glfwSetWindowSizeCallback(windowHandle, [](GLFWwindow* window, int width, int height)
 	{
-		//LOG_ENGINE_INFO("D3D11: Resized window to({0}x{1})", width, height); // TODO: Remove when we know it works
 		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->m_Window.SetSize(glm::uvec2(width, height));
+		glm::uvec2 resolution(width, height);
+
+		// Update resolution for window, active camera
+		app->m_Window.Resize(resolution);
+		auto cam = app->SceneHandler.GetComponent<Rutan::Scene::Components::Camera>(app->ActiveCamera);
+		cam->AspectRatio = (float)resolution.x / (float)resolution.y;
+
+		app->m_Renderer.Resize(resolution);
+		app->m_Renderer.SetCamera(cam->BuildViewProjectionMatrix());
+
 	});
-	
-	// Resizing the framebuffer
-	glfwSetFramebufferSizeCallback(windowHandle, [](GLFWwindow* window, int width, int height)
-	{
-		Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->m_Renderer.OnResize(glm::uvec2(width, height));
-	});	
+
 }
 
 }

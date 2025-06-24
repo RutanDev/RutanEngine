@@ -33,6 +33,7 @@ struct Camera
 
     const glm::mat4x4 BuildProjectionMatrix() const;
     const glm::mat4x4 BuildViewMatrix() const;
+    const glm::mat4x4 BuildViewProjectionMatrix() const;
 
     glm::vec3 Position    = glm::vec3(0.f, 0.f, -5.f);
     glm::vec3 Forward     = glm::vec3(0.f, 0.f, 1.f);
@@ -44,13 +45,12 @@ struct Camera
     float Pitch = 0.0f;
 
     // Frustum
-    glm::uvec2 Resolution = glm::uvec2(1920, 1080);     // TODO: What if we get a resize
-    float FieldOfView     = 0.f;   // Degrees
-    float NearPlane       = 0.1f;
-    float FarPlane        = 1000.f;
+    float AspectRatio = 16.f / 9.f; 
+    float FieldOfView = 0.f;        // Degrees
+    float NearPlane   = 0.1f;
+    float FarPlane    = 1000.f;
 
-    bool Active           = false;
-    bool NeedUpdate       = true;   //True = update GPU
+    bool NeedUpdate = true;   //True = update GPU
     // Perspective / ortographic
 };
 

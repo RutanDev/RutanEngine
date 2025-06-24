@@ -26,10 +26,14 @@ namespace Rutan::Scene::Components
     }
     const glm::mat4x4 Camera::BuildProjectionMatrix() const
     {
-        return glm::perspectiveFovLH(glm::radians(FieldOfView), (float)Resolution.x, (float)Resolution.y, NearPlane, FarPlane);
+        return glm::perspectiveLH(glm::radians(FieldOfView), AspectRatio, NearPlane, FarPlane);
     }
     const glm::mat4x4 Camera::BuildViewMatrix() const
     {
         return glm::lookAtLH(Position, Position + Forward, Up);
+    }
+    const glm::mat4x4 Camera::BuildViewProjectionMatrix() const
+    {
+        return BuildProjectionMatrix() * BuildViewMatrix();
     }
 }

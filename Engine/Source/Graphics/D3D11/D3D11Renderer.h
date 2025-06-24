@@ -2,8 +2,6 @@
 #include <d3d11.h>
 #include <dxgi1_3.h>
 #include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>	//Move? Not stored in private anyways
-#include <glm/vec4.hpp>
 #include <wrl/client.h>
 
 // TEMP
@@ -28,9 +26,10 @@ public:
 	~D3D11Renderer();
 
 	bool Init(const Rutan::Core::Window& window, const std::filesystem::path& shadersPath);
-	void OnResize(const glm::uvec2& resolution);
+	void Resize(const glm::uvec2& resolution);
 	void SetClearColor(const glm::vec4& color);
 
+	// TODO: Need a better solution for uploading constant buffers
 	void SetCamera(const glm::mat4x4& cameraMatrix) const;
 
 	// Made as often as possible

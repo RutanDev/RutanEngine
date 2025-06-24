@@ -192,7 +192,7 @@ bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesyste
 	return true;
 }
 
-void D3D11Renderer::OnResize(const glm::uvec2& resolution)
+void D3D11Renderer::Resize(const glm::uvec2& resolution)
 {
 	// Cleaning up old data
 	m_DeviceContext->Flush();

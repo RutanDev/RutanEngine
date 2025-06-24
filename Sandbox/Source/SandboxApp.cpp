@@ -29,12 +29,10 @@ public:
 		// Load assets
 		LOG_INFO("Sandbox Initalized");
 
-		m_Camera = SceneHandler.CreateEntity();
-		auto& cam = SceneHandler.AddComponent<Rutan::Scene::Components::Camera>(m_Camera);
-		cam.Resolution  = glm::uvec2(m_Settings.WindowWidth, m_Settings.WindowHeight);
+		ActiveCamera = SceneHandler.CreateEntity();
+		auto& cam = SceneHandler.AddComponent<Rutan::Scene::Components::Camera>(ActiveCamera);
 		cam.FieldOfView = 60.f;
 		cam.Position    = glm::vec3(0.f, 0.f, -5.f);
-		cam.Active      = true;
 
 		// SetEntityModel(entity0, "TheModel.fbx");
 		// SetEntityAnimations(entity0, "SomeAnimationIdle", "Idle");
@@ -49,7 +47,7 @@ public:
 
 	virtual void Update(f64 dt) override
 	{
-		if (auto cam = SceneHandler.GetComponent<Rutan::Scene::Components::Camera>(m_Camera)) 
+		if (auto cam = SceneHandler.GetComponent<Rutan::Scene::Components::Camera>(ActiveCamera)) 
 		{
 			float camSpeed = 10.f;
 			if (InputHandler.IsKeyPressed(Rutan::IO::Keyboard::ShiftLeft))
@@ -179,7 +177,6 @@ private:
 	Rutan::Core::AppSettings m_Settings;
 
 	// Store stuff related to this project here
-	Rutan::Scene::Entity m_Camera;
 };
 
 

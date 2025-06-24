@@ -48,8 +48,10 @@ private:
 
 // Can be used in the application
 protected:
-	IO::InputHandler    InputHandler;
-	Scene::SceneHandler SceneHandler;
+	IO::InputHandler     InputHandler;
+	Scene::SceneHandler  SceneHandler;
+	Rutan::Scene::Entity ActiveCamera;
+
 	// AudioSystem/AudioHandler
 	// Some handler for adding Shaders?
 	// Some handler for adding scripts?

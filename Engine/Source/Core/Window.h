@@ -23,7 +23,7 @@ public:
 
 	// Adjust window settings
 	void SetName(const std::string& name);
-	void SetSize(const glm::uvec2& windowSize);
+	void Resize(const glm::uvec2& resolution);
 	void EnableVSync(bool toggle = true);
 	void EnableFullscreen(bool toggle = true);
 
