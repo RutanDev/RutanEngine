@@ -8,6 +8,10 @@
 #include <Graphics/D3D11/Shader.h>	
 #include <Graphics/D3D11/RenderData.h>
 
+// Disable: 0 
+// MSAA:    2 - 16
+#define MSAA_LEVEL 4
+
 namespace std::filesystem { class path; }
 namespace Rutan::Core { class Window; }
 
@@ -40,6 +44,11 @@ private:
 	bool CreateSwapchainResources();
 	void DestroySwapchainResources();
 
+#if MSAA_LEVEL
+	bool CreateMSAAResources(const glm::uvec2& resolution);
+	void DestroyMSAAResources();
+#endif
+
 private:
 	// Finds adapters (GPUs) for this pc and creates the swapchain
 	ComPtr<IDXGIFactory2> m_DXGIFactory;		
@@ -54,7 +63,13 @@ private:
 	ComPtr<IDXGISwapChain1> m_SwapChain;
 
 	// Pointer to a texture that D3D11 can draw to
+	ComPtr<ID3D11Texture2D>        m_Backbuffer;
 	ComPtr<ID3D11RenderTargetView> m_RenderTargetView;
+	
+#if MSAA_LEVEL
+	ComPtr<ID3D11Texture2D>        m_MsaaTexture;
+	ComPtr<ID3D11RenderTargetView> m_MsaaRenderTargetView;
+#endif
 
 	// Main camera
 	ComPtr<ID3D11Buffer> m_CameraBuffer;

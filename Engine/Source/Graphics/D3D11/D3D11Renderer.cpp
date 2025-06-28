@@ -69,13 +69,14 @@ bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesyste
 	}
 
 	glm::uvec2 windowSize = window.GetSize();
-	
-	// HIGHER FRAMERATE
-	// DXGI_SWAP_EFFECT_DISCARD
-	// Buffercount 1
-	// Numerator = 0
-	// Denumorator = 0
 
+#if MSAA_LEVEL
+	if (!CreateMSAAResources(windowSize))
+	{
+		return false;
+	}
+#endif
+	
 	// Creating the swapchain
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 	swapChainDesc.Width					= windowSize.x;
@@ -91,9 +92,6 @@ bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesyste
 
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainFullscreenDesc = {};
 	swapChainFullscreenDesc.Windowed = true; // TODO: change this if we want fullscreen later
-	// NOT DOING MUCH FOR NOW...
-	/*swapChainFullscreenDesc.RefreshRate.Numerator = 300;
-	swapChainFullscreenDesc.RefreshRate.Denominator = 1;*/
 
 	result = m_DXGIFactory->CreateSwapChainForHwnd(m_Device.Get(),
 												   glfwGetWin32Window(window.GetWindowHandle()),
@@ -213,6 +211,11 @@ void D3D11Renderer::Resize(const glm::uvec2& resolution)
 	}
 
 	CreateSwapchainResources();
+
+#if MSAA_LEVEL
+	DestroyMSAAResources();
+	CreateMSAAResources(resolution);
+#endif
 }
 
 void D3D11Renderer::SetClearColor(const glm::vec4& color)
@@ -234,8 +237,13 @@ void D3D11Renderer::SetCamera(const glm::mat4x4& cameraMatrix) const
 void D3D11Renderer::BeginFrame()
 {
 	// Clearing the screen
+#if MSAA_LEVEL
+	m_DeviceContext->OMSetRenderTargets(1, m_MsaaRenderTargetView.GetAddressOf(), nullptr);
+	m_DeviceContext->ClearRenderTargetView(m_MsaaRenderTargetView.Get(), &m_ClearColor[0]);
+#else
 	m_DeviceContext->OMSetRenderTargets(1, m_RenderTargetView.GetAddressOf(), nullptr);
 	m_DeviceContext->ClearRenderTargetView(m_RenderTargetView.Get(), &m_ClearColor[0]);
+#endif
 	m_DeviceContext->RSSetViewports(1, &m_Viewport);
 	
 	// TODO: Render all the commands that was queue up
@@ -253,20 +261,26 @@ void D3D11Renderer::EndFrame()
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	
+#if MSAA_LEVEL
+    // Resolve MSAA texture
+    m_DeviceContext->ResolveSubresource(m_Backbuffer.Get(), 0,  // Destination (swap chain back buffer)
+                                        m_MsaaTexture.Get(), 0, // Source (MSAA render target)
+                                        DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM);
+#endif
+
 	// TODO: Set vsync enabled/disabled from some setting
 	m_SwapChain->Present(0, 0);
 }
 
 bool D3D11Renderer::CreateSwapchainResources()
 {
-	ComPtr<ID3D11Texture2D> backBuffer = nullptr;
-	if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer))))
+	if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&m_Backbuffer))))
 	{
 		LOG_ENGINE_FATAL("D3D11: Failed to get backbuffer from swapchain...");
 		return false;
 	}
 
-	if (FAILED(m_Device->CreateRenderTargetView(backBuffer.Get(), nullptr, &m_RenderTargetView)))
+	if (FAILED(m_Device->CreateRenderTargetView(m_Backbuffer.Get(), nullptr, &m_RenderTargetView)))
 	{
 		LOG_ENGINE_FATAL("D3D11: Failed to create render target view from backbuffer...");
 		return false;
@@ -277,7 +291,51 @@ bool D3D11Renderer::CreateSwapchainResources()
 void D3D11Renderer::DestroySwapchainResources()
 {
 	m_RenderTargetView.Reset();
+	m_Backbuffer.Reset();
 }
+
+#if MSAA_LEVEL
+bool D3D11Renderer::CreateMSAAResources(const glm::uvec2& resolution)
+{
+	u32 msaaSampleCount = (u32)MSAA_LEVEL;
+	u32 msaaQuality = 0;
+	if (FAILED(m_Device->CheckMultisampleQualityLevels(DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM, msaaSampleCount, &msaaQuality))) 
+	{
+		LOG_ENGINE_FATAL("D3D11: MSAA level {0} with quality {1} is not supported on your PC...", msaaSampleCount, msaaQuality);
+		return false;
+	}
+
+	D3D11_TEXTURE2D_DESC colorDesc = {};
+	colorDesc.Width                = resolution.x;
+	colorDesc.Height               = resolution.y;
+	colorDesc.Format               = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	colorDesc.SampleDesc.Count     = msaaSampleCount;
+	colorDesc.SampleDesc.Quality   = msaaQuality - 1;
+	colorDesc.MipLevels            = 1;
+	colorDesc.ArraySize            = 1;
+	colorDesc.Usage                = D3D11_USAGE_DEFAULT;
+	colorDesc.BindFlags            = D3D11_BIND_RENDER_TARGET;
+	if (FAILED(m_Device->CreateTexture2D(&colorDesc, nullptr, &m_MsaaTexture)))
+	{
+		LOG_ENGINE_FATAL("D3D11: MSAA Failed to create texture...");
+		return false;
+	}
+	if (FAILED(m_Device->CreateRenderTargetView(m_MsaaTexture.Get(), nullptr, &m_MsaaRenderTargetView)))
+	{
+		LOG_ENGINE_FATAL("D3D11: MSAA Failed to create render target view...");
+		return false;
+	}
+
+	// Success!
+	return true;
+}
+
+void D3D11Renderer::DestroyMSAAResources()
+{
+	m_MsaaRenderTargetView.Reset();
+	m_MsaaTexture.Reset();
+}
+#endif
 
 
 }
