@@ -1,20 +1,20 @@
 # Welcome to RutanEngine
-Hobby 3D-renderer or game engine? Who knows? Ses i rutan 13:00?
+Hobby 3D-renderer. Ses i rutan 13:00?
 
 # Tested platforms
-| OS        | Version   | Compilation using   |
-|-----------|-----------|---------------------|
-| Windows   | 10        | Visual Studio 2022  |
-
+| OS        | Version   | Compilation using   | Graphics API |
+|-----------|-----------|---------------------|--------------|
+| Windows   | 10        | Visual Studio 2022  | DirectX 11   |
+| Windows   | 11        | Visual Studio 2022  | DirectX 11   |
 
 # How to download
 You can download it using Git with the command:
 > git clone --recursive https://github.com/RutanEngine/RutanEngine.git
 
-# Build project
-1. Go into the folder called "BuildProject" and choose platform "Windows" or "Linux".
-2. Build the solution/makefile with one of the files using the version most fitted for your need.
-3. Open the solution for Visual Studio or any other IDE of your choice (that are supported by premake) in main directory.
+# Build project on Windows
+1. cmd in RutanEngine-directory
+2. Run: BuildProject/Windows/BuildVS2022.bat
+3. Open RutanEngine.sln
 4. Go bananas!
 
 # Libraries and 3rd-parties
@@ -24,3 +24,15 @@ You can download it using Git with the command:
 * [stb](https://github.com/nothings/stb) Loading in images.
 * [glfw](https://github.com/glfw/glfw) Window creation and input.
 * [glm](https://github.com/icaven/glm) Math library for 3d-graphics.
+
+
+# Future plan
+| OS        | Version   | Compilation using   | Graphics API |
+|-----------|-----------|---------------------|--------------|
+| Linux     | Mint?     | ...                 | Vulkan       |
+| Windows   | 10 / 11   | Visual Studio 2022  | DirectX 12   |
+
+# Build project Linux (NOT SUPPORTED YET)
+1. > BuildProject/Linux/BuildGMake.sh
+2. > make
+3. Go bananas!
