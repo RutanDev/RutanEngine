@@ -1,0 +1,25 @@
+########### RenderPipeline / Queue ###########
+### Which order is everything happening in ###
+
+{
+	Pass: "Opaque",
+	Shaders: "Shaders/Default.vs", "Shaders/Default.fs"
+},
+{
+	Pass: "Transparent",
+	Shaders: 
+},
+{
+	Pass: "AutomaticExposure"
+	ComputeShader: ""
+}
+{
+	Pass: "Bloom",
+	ComputeShader: "Bloom"
+},
+{
+	Pass: "PostProcessing"
+	ComputeShader: 
+}
+
+

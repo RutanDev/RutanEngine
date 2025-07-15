@@ -55,6 +55,7 @@ void Application::StartApp()
 		// TODO: Only update when new data has been recieved
 		m_Renderer.BeginFrame();
 		Update(dt.GetSeconds());
+		m_Renderer.Render();
 		m_Renderer.EndFrame();
 	}
 

@@ -119,6 +119,13 @@ bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesyste
 	cameraDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	m_Device->CreateBuffer(&cameraDesc, nullptr, &m_CameraBuffer);
 
+	// Viewport
+	m_Viewport.TopLeftX = 0.f;
+	m_Viewport.TopLeftY = 0.f;
+	m_Viewport.Width = static_cast<float>(windowSize.x);
+	m_Viewport.Height = static_cast<float>(windowSize.y);
+	m_Viewport.MinDepth = 0.f;
+	m_Viewport.MaxDepth = 1.f;
 
 	// Setup ImGui
 	IMGUI_CHECKVERSION();
@@ -140,21 +147,17 @@ bool D3D11Renderer::Init(const Rutan::Core::Window& window, const std::filesyste
 		return false;
 	}
 
+	if (m_ShaderManager.LoadAllShaders(m_Device.Get(), shadersPath))
+	{
+		LOG_ENGINE_FATAL("D3D11: Failed to compile shaders...");
+		return false;
+	}
+
 	/* 
 	#################################################################
-		Hello triangle test for now. Move to other place later on
+		Testing area that need to be cleared!!!
 	#################################################################
 	*/
-
-	m_Viewport.TopLeftX = 0.f;
-	m_Viewport.TopLeftY = 0.f;
-	m_Viewport.Width    = static_cast<float>(windowSize.x);
-	m_Viewport.Height   = static_cast<float>(windowSize.y);
-	m_Viewport.MinDepth = 0.f;
-	m_Viewport.MaxDepth = 1.f;
-
-
-	m_TestShader.Load(m_Device.Get(), shadersPath.wstring() + L"/DefaultVS.hlsl", shadersPath.wstring() + L"/DefaultPS.hlsl");
 
 	struct VertexPositionColor
 	{
@@ -246,13 +249,26 @@ void D3D11Renderer::BeginFrame()
 #endif
 	m_DeviceContext->RSSetViewports(1, &m_Viewport);
 	
-	// TODO: Render all the commands that was queue up
-	m_TestShader.Draw(m_DeviceContext.Get(), m_TestRenderData);
-
 	// Prepare for next ImGui frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+}
+
+void D3D11Renderer::Render()
+{
+	const auto& allShaders = m_ShaderManager.GetAllShaders();
+	for (auto shader : allShaders) 
+	{
+		shader.Bind(m_DeviceContext.Get());
+
+		// TODO: for (all renderObjects)
+		m_TestRenderData.Bind(m_DeviceContext.Get());
+		m_DeviceContext->DrawIndexed(m_TestRenderData.GetIndexCount(), 0, 0);
+		m_TestRenderData.UnBind(m_DeviceContext.Get());
+
+		shader.Unbind(m_DeviceContext.Get());
+	}
 }
 
 void D3D11Renderer::EndFrame()

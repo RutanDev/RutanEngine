@@ -5,9 +5,9 @@
 namespace Rutan::Graphics
 {
 
-bool Shader::Load(ID3D11Device* device,
-		          const std::filesystem::path& vertexShaderPath, 
-		          const std::filesystem::path& pixelShaderPath)
+Shader::Shader(ID3D11Device* device, 
+               const std::filesystem::path& vertexShaderPath,
+		       const std::filesystem::path& pixelShaderPath)
 {
     ComPtr<ID3DBlob> vertexBlob;
     ComPtr<ID3DBlob> pixelBlob;
@@ -19,7 +19,7 @@ bool Shader::Load(ID3D11Device* device,
     if (!compiled)
     {
         LOG_ENGINE_ERROR("D3D11: Failed to compile shader...");
-        return false;
+        return;
     }
 
     // Creating shaders
@@ -35,42 +35,34 @@ bool Shader::Load(ID3D11Device* device,
     if (FAILED(result)) 
     {
         LOG_ENGINE_ERROR("D3D11: Failed to create shader...");
-        return false;
+        return;
     }
 
     // Input Layout
     if (!CreateInputLayout(device, vertexBlob.Get()))
     {
         LOG_ENGINE_ERROR("D3D11: Failed to create input layout...");
-        return false;
+        return;
     }
 
-    return true;
+    m_Compiled = true;
 }
 
-void Shader::Draw(ID3D11DeviceContext* deviceContext, const RenderData& renderData)
+void Shader::Bind(ID3D11DeviceContext* deviceContext)
 {
-    // Binding data
     deviceContext->IASetInputLayout(m_InputLayout.Get());
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // TODO: Setup later
     deviceContext->VSSetShader(m_VertexShader.Get(), nullptr, 0);
     deviceContext->PSSetShader(m_PixelShader.Get(), nullptr, 0);
-    renderData.Bind(deviceContext);
+}
 
-
-    // Draw
-    deviceContext->DrawIndexed(renderData.GetIndexCount(), 0, 0);
-
-
-    // Unbind data
+void Shader::Unbind(ID3D11DeviceContext* deviceContext)
+{
     deviceContext->IASetInputLayout(nullptr);
     deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED);
     deviceContext->VSSetShader(nullptr, nullptr, 0);
     deviceContext->PSSetShader(nullptr, nullptr, 0);
-    renderData.UnBind(deviceContext);
-
-    // Or maybe just use this function???
-    //deviceContext->ClearState();
+    // Or maybe just use this function: deviceContext->ClearState();
 }
 
 DXGI_FORMAT Shader::GetDXGIFormat(const std::string& semanticName, UINT mask) const

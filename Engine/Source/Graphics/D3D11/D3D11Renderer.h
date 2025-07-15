@@ -5,7 +5,7 @@
 #include <wrl/client.h>
 
 // TEMP
-#include <Graphics/D3D11/Shader.h>	
+#include <Graphics/D3D11/ShaderManager.h>	
 #include <Graphics/D3D11/RenderData.h>
 
 // Disable: 0 
@@ -38,6 +38,7 @@ public:
 
 	// Made as often as possible
 	void BeginFrame();
+	void Render();
 	void EndFrame();
 
 private:
@@ -73,11 +74,13 @@ private:
 
 	// Main camera
 	ComPtr<ID3D11Buffer> m_CameraBuffer;
+	D3D11_VIEWPORT m_Viewport;	
 
 	// TEMP
 	glm::vec4 m_ClearColor;
-	D3D11_VIEWPORT m_Viewport;	// TODO: Should be connected to the camera?
-	Shader m_TestShader;
+	
+	ShaderManager m_ShaderManager;
+	
 	RenderData m_TestRenderData;
 
 
